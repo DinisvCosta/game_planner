@@ -90,10 +90,10 @@ def games(request):
     return HttpResponse(output)
 
 @login_required
-def game_detail(request, game_name):
-    #game = get_object_or_404(Game, name=game_name)
+def game_detail(request, game_id):
+    game = get_object_or_404(Game, pk=game_id)
     #return render(request, 'futeboladas/game_detail.html', {'game': game})
-    return HttpResponse("You're looking at game %s." % game_name)
+    return HttpResponse("You're looking at game %s." % game.name)
 
 def friends(request):
     return HttpResponse("Friends Info Page")

@@ -4,6 +4,13 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+def pkgen(stringLength=12):
+    import random
+    import string
+
+    lettersAndDigits = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     number_of_games_played = models.IntegerField(default=0)
@@ -13,6 +20,7 @@ class Player(models.Model):
         return string
 
 class Game(models.Model):
+    game_id = models.CharField(primary_key=True, max_length=12, editable=False)
     name = models.CharField(max_length=30)
     admin = models.ForeignKey(Player, on_delete=models.CASCADE)
     when = models.DateField()

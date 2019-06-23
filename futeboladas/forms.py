@@ -2,7 +2,7 @@ import datetime
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import Player, Game
+from .models import Player, Game, pkgen
 
 class SignUpForm(forms.Form):
     username = forms.CharField(label='Username', max_length=30)
@@ -86,7 +86,14 @@ class CreateGameForm(forms.Form):
     def save(self):
         player = Player.objects.get(user_id=self.user.id)
 
-        game = Game(name=self.cleaned_data['name'],
+        success = False
+
+        while not success:
+            pk = pkgen()
+            success = not Game.objects.filter(game_id=pk).exists()
+
+        game = Game(game_id=pk,
+                    name=self.cleaned_data['name'],
                     admin=player,
                     when=self.cleaned_data['when'],
                     where=self.cleaned_data['where'],
