@@ -1,0 +1,11 @@
+{% load static %}
+
+{% if games_administered_by_user %}
+    <ul>
+    {% for game in games_administered_by_user %}
+        <li><a href="{% url 'futeboladas:games' game.id %}">{{ game.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>You currently don't have any games.</p>
+{% endif %}
