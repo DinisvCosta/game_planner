@@ -13,6 +13,9 @@ def index(request):
     return render(request, 'futeboladas/index.html')
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('futeboladas:index')
+
     next = ""
     if request.GET:
         next = request.GET['next']
@@ -24,6 +27,8 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             login(request, user)
+
+            # redirect to correct page if there is a next arg
             if next == "":
                 return redirect('futeboladas:index')
             else:
@@ -38,6 +43,9 @@ def logout_view(request):
     return redirect('futeboladas:index')
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('futeboladas:index')
+        
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
