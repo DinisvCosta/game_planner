@@ -14,9 +14,7 @@ def index(request):
 
 def login_view(request):
     next = ""
-    # TODO Support @login_required's "next" parameter for redirect 
-    # when trying to access login_required view.
-    if request.GET:  
+    if request.GET:
         next = request.GET['next']
 
     if request.method == 'POST':
@@ -27,7 +25,7 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             if next == "":
-                return redirect('index')
+                return redirect('futeboladas:index')
             else:
                 return redirect(next)
     else:
@@ -37,7 +35,7 @@ def login_view(request):
 def logout_view(request):
     # TODO if no user is currently logged in, display message saying that
     logout(request)
-    return redirect('index')
+    return redirect('futeboladas:index')
 
 def signup(request):
     if request.method == 'POST':
@@ -48,7 +46,7 @@ def signup(request):
             password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect('index')
+            return redirect('futeboladas:index')
     else:
         form = SignUpForm()
     return render(request, 'futeboladas/signup.html', {'form': form})
@@ -59,7 +57,7 @@ def manage_profile(request):
         form = ManageProfileForm(request.POST, user=request.user)
         if form.is_valid():
             update_session_auth_hash(request, form.user)
-            return redirect('profile')
+            return redirect('futeboladas:profile')
     else:
         form = ManageProfileForm()
     return render(request, 'futeboladas/manage_profile.html', {'form': form})
@@ -71,7 +69,7 @@ def create_game(request):
         if form.is_valid():
             form.save()
             # TODO redirect to created game page "futeboladas.com/games/new_game_name"
-            return redirect('games')
+            return redirect('futeboladas:games')
     else:
         form = CreateGameForm()
     return render(request, 'futeboladas/create_game.html', {'form': form})
