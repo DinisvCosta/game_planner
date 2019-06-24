@@ -3,7 +3,7 @@
 {% if games_administered_by_user %}
     <ul>
     {% for game in games_administered_by_user %}
-        <li><a href="{% url 'futeboladas:games' game.id %}">{{ game.name }}</a></li>
+        <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

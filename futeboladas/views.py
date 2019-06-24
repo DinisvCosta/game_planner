@@ -77,17 +77,22 @@ def create_game(request):
     return render(request, 'futeboladas/create_game.html', {'form': form})
 
 # TODO games view displays logged in players games, button to create new game and
-#  if player clicks on a game he is redirected to futeboladas.com/games/game_name
+#  if player clicks on a game he is redirected to futeboladas.com/games/game_id
 #  where he can edit the games details
-@login_required
-def games(request):
-    user = request.user
-    #  Get player
-    player = Player.objects.get(user_id=user.id)
-    #  Get player's games list
-    user_games = Game.objects.filter(admin=player.id)
-    output = ', '.join([game.name for game in user_games])
-    return HttpResponse(output)
+class GamesListView(generic.ListView):
+    model = Game
+    template_name = "futeboladas/games.html"
+    context_object_name = 'games_administered_by_user'
+
+    def get_queryset(self):
+        """
+        Excludes any games that aren't administered by the logged in user.
+        """
+        user = self.request.user
+        # Get player's games list
+        player = Player.objects.get(user_id=user.id)
+
+        return Game.objects.filter(admin=player.id)
 
 @login_required
 def game_detail(request, game_id):
