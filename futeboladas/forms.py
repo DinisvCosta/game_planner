@@ -19,11 +19,10 @@ class SignUpForm(forms.Form):
         if User.objects.filter(username=self.cleaned_data['username']).exists():
             self.add_error('username', "Username already registered, please try another.")
         
-        """
         # Display error if email is already registered
-        if User.objects.filter(username=self.cleaned_data['username']).exists():
-            self.add_error('username', "Username already registered, please try another.")
-        """
+        if User.objects.filter(email=self.cleaned_data['email']).exists():
+            self.add_error('email', "Email already registered, please try another.")
+        
 
         # Display error if password confirmation field doesn't match with password field
         if clean_data.get('password1') != clean_data.get('password2'):
