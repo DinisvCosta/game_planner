@@ -10,7 +10,7 @@ from .models import Player, Game
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the futeboladas app index page.")
+    return render(request, 'futeboladas/index.html')
 
 def login_view(request):
     next = ""
