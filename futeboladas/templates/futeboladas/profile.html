@@ -1,0 +1,6 @@
+<p>Username: {{ authenticated_user.username }}</p>
+<p>First Name: {{ authenticated_user.first_name }}</p>
+<p>Last Name: {{ authenticated_user.last_name }}</p>
+<p>Email: {{ authenticated_user.email }}</p>
+
+<a href="{% url 'futeboladas:manage_profile' %}">ManageProfile</a><br>

@@ -1,8 +1,11 @@
-<a href="{% url 'futeboladas:login' %}">Login</a><br>
-<a href="{% url 'futeboladas:signup' %}">Signup</a><br>
-<a href="{% url 'futeboladas:logout' %}">Logout</a><br>
-<a href="{% url 'futeboladas:profile' %}">Profile</a><br>
-<a href="{% url 'futeboladas:manage_profile' %}">ManageProfile</a><br>
-<a href="{% url 'futeboladas:create_game' %}">CreateGame</a><br>
-<a href="{% url 'futeboladas:games' %}">Games</a><br>
-<a href="{% url 'futeboladas:friends' %}">Friends</a><br>
+{% if user.is_authenticated %}
+    <a href="{% url 'futeboladas:logout' %}">Logout</a><br>
+    <a href="{% url 'futeboladas:profile' user.id %}">Profile</a><br>
+    <a href="{% url 'futeboladas:manage_profile' %}">ManageProfile</a><br>
+    <a href="{% url 'futeboladas:create_game' %}">CreateGame</a><br>
+    <a href="{% url 'futeboladas:games' %}">Games</a><br>
+    <a href="{% url 'futeboladas:friends' %}">Friends</a><br>
+{% else %}
+    <a href="{% url 'futeboladas:login' %}">Login</a><br>
+    <a href="{% url 'futeboladas:signup' %}">Signup</a><br>
+{% endif %}

@@ -10,7 +10,7 @@ from .models import Player, Game
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
 def index(request):
-    return render(request, 'futeboladas/index.html')
+    return render(request, 'futeboladas/index.html', {'user': request.user})
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -109,5 +109,7 @@ def game_detail(request, game_id):
 def friends(request):
     return HttpResponse("Friends Info Page")
 
-def profile(request):
-    return HttpResponse("Profile Info Page")
+class ProfileView(generic.DetailView):
+    model = User
+    template_name = 'futeboladas/profile.html'
+    context_object_name = 'authenticated_user'
