@@ -1,11 +1,16 @@
-<p>Name: {{ game.name }}</p>
-<p>Admin: {{ game.admin }}</p>
+{% if authorized %}
 
+    <p>Name: {{ game.name }}</p>
+    <p>Admin: {{ game.admin }}</p>
 
-{% if game.players %}
-<ul>
-    {% for player in game.players.all %}
-        <li> {{ player.user.username }} </li>
-    {% endfor %}
-</ul>
+    {% if game.players %}
+    <ul>
+        {% for player in game.players.all %}
+            <li> {{ player.user.username }} </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+{% else %}
+    <p>You're not invited to this private game.</p>
 {% endif %}

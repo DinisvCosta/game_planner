@@ -99,8 +99,10 @@ class GamesListView(generic.ListView):
 @login_required
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
-    print(game.players.all())
-    return render(request, 'futeboladas/game_detail.html', {'game': game})
+    player = Player.objects.get(user_id=request.user.id)
+    authorized = (player in game.players.all()) or (player == game.admin) or not game.private
+
+    return render(request, 'futeboladas/game_detail.html', {'game': game, 'authorized': authorized})
 
 def friends(request):
     return HttpResponse("Friends Info Page")
