@@ -58,13 +58,17 @@ class LoginForm(forms.Form):
 
 
 class CreateGameForm(forms.Form):
+    user_choices = []
+
     name = forms.CharField(label="Game Name", min_length=1, max_length=30)
     when = forms.DateField(label="Date", widget=forms.SelectDateWidget(), initial=datetime.date.today())
     where = forms.CharField(max_length=60)
-    players = forms.IntegerField(widget=forms.NumberInput())
+    players = forms.MultipleChoiceField(required=False, choices=user_choices)
     price = forms.IntegerField(widget=forms.NumberInput())
     duration = forms.DurationField(widget=forms.TimeInput())
-    password = forms.CharField(max_length=30, widget=forms.PasswordInput(), required=False)
+    private = forms.BooleanField(required=False)
+
+    pk = None
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -88,18 +92,18 @@ class CreateGameForm(forms.Form):
         success = False
 
         while not success:
-            pk = pkgen()
-            success = not Game.objects.filter(game_id=pk).exists()
+            self.pk = pkgen()
+            success = not Game.objects.filter(game_id=self.pk).exists()
 
-        game = Game(game_id=pk,
+        game = Game(game_id=self.pk,
                     name=self.cleaned_data['name'],
                     admin=player,
                     when=self.cleaned_data['when'],
                     where=self.cleaned_data['where'],
-                    players=self.cleaned_data['players'],
+                    #players=self.cleaned_data['players'],
                     price=self.cleaned_data['price'],
                     duration=self.cleaned_data['duration'],
-                    password=self.cleaned_data['password'])
+                    private=self.cleaned_data['private'])
         game.save()
         return True
 

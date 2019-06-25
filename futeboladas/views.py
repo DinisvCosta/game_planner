@@ -76,15 +76,11 @@ def create_game(request):
         form = CreateGameForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
-            # TODO redirect to created game page "futeboladas.com/games/new_game_name"
-            return redirect('futeboladas:games')
+            return redirect('futeboladas:game_detail', pk=form.pk)
     else:
         form = CreateGameForm()
     return render(request, 'futeboladas/create_game.html', {'form': form})
 
-# TODO games view displays logged in players games, button to create new game and
-#  if player clicks on a game he is redirected to futeboladas.com/games/game_id
-#  where he can edit the games details
 class GamesListView(generic.ListView):
     model = Game
     template_name = "futeboladas/games.html"

@@ -28,8 +28,7 @@ class Game(models.Model):
     players = models.ManyToManyField(Player)
     price = models.IntegerField()
     duration = models.DurationField()
-    # TODO encrypt password: https://stackoverflow.com/questions/25098466/how-to-store-django-hashed-password-without-the-user-object
-    password = models.CharField(max_length=30, blank=True, default='')
+    private = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
