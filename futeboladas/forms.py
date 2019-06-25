@@ -56,14 +56,15 @@ class LoginForm(forms.Form):
         if authenticate(username=username, password=password) == None:
             self.add_error('password', "Invalid password.")            
 
+class PlayerModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return obj.user.username
 
 class CreateGameForm(forms.Form):
-    user_choices = []
-
     name = forms.CharField(label="Game Name", min_length=1, max_length=30)
     when = forms.DateField(label="Date", widget=forms.SelectDateWidget(), initial=datetime.date.today())
     where = forms.CharField(max_length=60)
-    players = forms.MultipleChoiceField(required=False, choices=user_choices)
+    players = PlayerModelMultipleChoiceField(queryset=Player.objects.all())
     price = forms.IntegerField(widget=forms.NumberInput())
     duration = forms.DurationField(widget=forms.TimeInput())
     private = forms.BooleanField(required=False)
@@ -104,7 +105,10 @@ class CreateGameForm(forms.Form):
                     price=self.cleaned_data['price'],
                     duration=self.cleaned_data['duration'],
                     private=self.cleaned_data['private'])
+                    
         game.save()
+        game.players.set(self.cleaned_data['players'])
+        
         return True
 
 class ManageProfileForm(forms.Form):
