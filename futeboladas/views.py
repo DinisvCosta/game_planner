@@ -84,7 +84,7 @@ def create_game(request):
 class GamesListView(generic.ListView):
     model = Game
     template_name = "futeboladas/games.html"
-    context_object_name = 'games_administered_by_user'
+    context_object_name = 'games'
 
     def get_queryset(self):
         """
@@ -94,7 +94,13 @@ class GamesListView(generic.ListView):
         # Get player's games list
         player = Player.objects.get(user_id=user.id)
 
-        return Game.objects.filter(admin=player.id)
+        games_dictionary = {}
+
+        games_dictionary['administered'] = Game.objects.filter(admin=player.id)
+        games_dictionary['invited'] = Game.objects.filter(players=player)
+        games_dictionary['public'] = Game.objects.filter(private=False)
+
+        return games_dictionary
 
 @login_required
 def game_detail(request, pk):

@@ -1,11 +1,35 @@
 {% load static %}
 
-{% if games_administered_by_user %}
+{% if games.administered %}
+
+<p>Games you are administering:</p>
+<ul>
+{% for game in games.administered %}
+    <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if games.public %}
+
+    <p>Public games:</p>
     <ul>
-    {% for game in games_administered_by_user %}
+    {% for game in games.public %}
         <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
     {% endfor %}
     </ul>
-{% else %}
+{% endif %}
+
+{% if games.invited %}
+
+<p>Games you are invited to:</p>
+<ul>
+{% for game in games.invited %}
+    <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if not games.administered and not games.public %}
     <p>You currently don't have any games.</p>
 {% endif %}
