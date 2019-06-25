@@ -13,6 +13,6 @@ urlpatterns = [
     path('manage_profile/', views.manage_profile, name='manage_profile'),
     path('create_game/', views.create_game, name='create_game'),
     path('games/', login_required(views.GamesListView.as_view()), name='games'),
-    path('games/<str:game_id>/', views.game_detail, name='game_detail'),
+    path('games/<str:pk>/', views.game_detail, name='game_detail'),
     path('friends/', views.friends, name='friends'),
 ]

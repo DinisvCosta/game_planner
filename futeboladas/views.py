@@ -101,10 +101,10 @@ class GamesListView(generic.ListView):
         return Game.objects.filter(admin=player.id)
 
 @login_required
-def game_detail(request, game_id):
-    game = get_object_or_404(Game, pk=game_id)
-    #return render(request, 'futeboladas/game_detail.html', {'game': game})
-    return HttpResponse("You're looking at game %s." % game.name)
+def game_detail(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    print(game.players.all())
+    return render(request, 'futeboladas/game_detail.html', {'game': game})
 
 def friends(request):
     return HttpResponse("Friends Info Page")

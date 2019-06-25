@@ -22,12 +22,10 @@ class Player(models.Model):
 class Game(models.Model):
     game_id = models.CharField(primary_key=True, max_length=12, editable=False)
     name = models.CharField(max_length=30)
-    admin = models.ForeignKey(Player, on_delete=models.CASCADE)
+    admin = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='game_admin')
     when = models.DateField()
     where = models.CharField(max_length=60)
-    # TODO make players field actual registered players that admin can invite upon game creation or later on from friends list,
-    #  or, in the beginning of the app launch, the admin can input names for people that don't have an account yet.
-    players = models.IntegerField()
+    players = models.ManyToManyField(Player)
     price = models.IntegerField()
     duration = models.DurationField()
     # TODO encrypt password: https://stackoverflow.com/questions/25098466/how-to-store-django-hashed-password-without-the-user-object
