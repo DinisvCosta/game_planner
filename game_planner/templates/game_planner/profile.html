@@ -8,3 +8,24 @@
 <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
 
 {% endif %}
+
+{% if player not in request_user_friends_list %}
+
+<form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
+    {% csrf_token %}
+    <input id="add_friend_button" type="submit" value="Add Friend" />
+</form>
+
+{% endif %}
+
+{% if player in request_user_friends_list %}
+
+<form action="{% url 'game_planner:remove_friend' profile_user.id %}" method="POST">
+    {% csrf_token %}
+    <input id="remove_friend_button" type="submit" value="Remove Friend" />
+</form>
+
+{% endif %}
+
+
+<p>Friends: {{ friends_list }}</p>

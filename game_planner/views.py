@@ -115,7 +115,6 @@ class PlayersListView(generic.ListView):
         
         return players
 
-
 @login_required
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
@@ -124,6 +123,7 @@ def game_detail(request, pk):
 
     return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized})
 
+@login_required
 def friends(request):
     return HttpResponse("Friends Info Page")
 
@@ -134,5 +134,33 @@ class ProfileView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Add request user to context if user is currently logged in
         context['request_user'] = self.request.user
+
+        # Add profile player friends list to context
+        player = Player.objects.get(user_id=self.object.id)
+        context['friends_list'] = list(player.friends.all())
+
+        # Add profile player to context
+        context['player'] = player
+
+        print(context['friends_list'])
+        
+        # Add players friends list to context if user is currently logged in
+        request_player = Player.objects.get(user_id=self.request.user.id)
+        context['request_user_friends_list'] = list(request_player.friends.all())
+        
         return context
+
+@login_required
+def add_friend(request, pk):
+    player = Player.objects.get(user_id=request.user.id)
+    player.friends.add(pk)
+    return redirect('game_planner:profile', pk=pk)
+
+@login_required
+def remove_friend(request, pk):
+    player = Player.objects.get(user_id=request.user.id)
+    player.friends.remove(pk)
+    return redirect('game_planner:profile', pk=pk)
