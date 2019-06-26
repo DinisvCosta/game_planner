@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 from . import views
 
-app_name = 'futeboladas'
+app_name = 'game_planner'
 urlpatterns = [
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),

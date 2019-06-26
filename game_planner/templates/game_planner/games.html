@@ -5,7 +5,7 @@
 <p>Games you are administering:</p>
 <ul>
 {% for game in games.administered %}
-    <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
+    <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -15,7 +15,7 @@
     <p>Public games:</p>
     <ul>
     {% for game in games.public %}
-        <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
+        <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
     {% endfor %}
     </ul>
 {% endif %}
@@ -25,7 +25,7 @@
 <p>Games you are invited to:</p>
 <ul>
 {% for game in games.invited %}
-    <li><a href="{% url 'futeboladas:game_detail' game.game_id %}">{{ game.name }}</a></li>
+    <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}

@@ -104,7 +104,7 @@ venv.bak/
 .mypy_cache/
 
 .vscode/
-futeboladas/migrations/
+game_planner/migrations/
 
 
 

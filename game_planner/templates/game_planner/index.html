@@ -1,0 +1,11 @@
+{% if user.is_authenticated %}
+    <a href="{% url 'game_planner:logout' %}">Logout</a><br>
+    <a href="{% url 'game_planner:profile' user.id %}">Profile</a><br>
+    <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
+    <a href="{% url 'game_planner:create_game' %}">CreateGame</a><br>
+    <a href="{% url 'game_planner:games' %}">Games</a><br>
+    <a href="{% url 'game_planner:friends' %}">Friends</a><br>
+{% else %}
+    <a href="{% url 'game_planner:login' %}">Login</a><br>
+    <a href="{% url 'game_planner:signup' %}">Signup</a><br>
+{% endif %}
