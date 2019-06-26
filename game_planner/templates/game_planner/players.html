@@ -1,0 +1,8 @@
+{% load static %}
+
+<p>Players:</p>
+<ul>
+{% for player in players %}
+    <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
+{% endfor %}
+</ul>

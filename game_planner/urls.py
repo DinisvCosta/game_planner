@@ -9,6 +9,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('signup/', views.signup, name='signup'),
+    path('players/', views.PlayersListView.as_view(), name='players'),
     path('profile/<str:pk>', login_required(views.ProfileView.as_view()), name='profile'),
     path('manage_profile/', views.manage_profile, name='manage_profile'),
     path('create_game/', views.create_game, name='create_game'),

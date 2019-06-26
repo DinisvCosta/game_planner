@@ -101,6 +101,20 @@ class GamesListView(generic.ListView):
         games_dictionary['public'] = Game.objects.filter(private=False)
 
         return games_dictionary
+    
+class PlayersListView(generic.ListView):
+    model = User
+    template_name = "game_planner/players.html"
+    context_object_name = 'players'
+
+    def get_queryset(self):
+        # Excludes logged in user from player list
+        user = self.request.user
+        # Get player's games list
+        players = Player.objects.exclude(user_id=user.id)
+        
+        return players
+
 
 @login_required
 def game_detail(request, pk):
