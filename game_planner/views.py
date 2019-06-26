@@ -130,4 +130,9 @@ def friends(request):
 class ProfileView(generic.DetailView):
     model = User
     template_name = 'game_planner/profile.html'
-    context_object_name = 'authenticated_user'
+    context_object_name = 'profile_user'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['request_user'] = self.request.user
+        return context

@@ -1,6 +1,10 @@
-<p>Username: {{ authenticated_user.username }}</p>
-<p>First Name: {{ authenticated_user.first_name }}</p>
-<p>Last Name: {{ authenticated_user.last_name }}</p>
-<p>Email: {{ authenticated_user.email }}</p>
+<p>Username: {{ profile_user.username }}</p>
+<p>First Name: {{ profile_user.first_name }}</p>
+<p>Last Name: {{ profile_user.last_name }}</p>
 
+{% if request_user == profile_user  %}
+
+<p>Email: {{ profile_user.email }}</p>
 <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
+
+{% endif %}
