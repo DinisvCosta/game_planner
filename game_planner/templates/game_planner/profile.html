@@ -4,28 +4,33 @@
 
 {% if request_user == profile_user  %}
 
-<p>Email: {{ profile_user.email }}</p>
-<a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
+    <p>Email: {{ profile_user.email }}</p>
+    <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
+
+{% else %}
+
+    {% if player not in request_user_friends_list %}
+
+        <form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
+            {% csrf_token %}
+            <input id="add_friend_button" type="submit" value="Add Friend" />
+        </form>
+
+    {% else %}
+
+        <form action="{% url 'game_planner:remove_friend' profile_user.id %}" method="POST">
+            {% csrf_token %}
+            <input id="remove_friend_button" type="submit" value="Remove Friend" />
+        </form>
+
+    {% endif %}
 
 {% endif %}
 
-{% if player not in request_user_friends_list %}
+<p>Friends:</p>
 
-<form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
-    {% csrf_token %}
-    <input id="add_friend_button" type="submit" value="Add Friend" />
-</form>
-
-{% endif %}
-
-{% if player in request_user_friends_list %}
-
-<form action="{% url 'game_planner:remove_friend' profile_user.id %}" method="POST">
-    {% csrf_token %}
-    <input id="remove_friend_button" type="submit" value="Remove Friend" />
-</form>
-
-{% endif %}
-
-
-<p>Friends: {{ friends_list }}</p>
+<ul>
+    {% for player in friends_list %}
+        <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
+    {% endfor %}
+</ul>
