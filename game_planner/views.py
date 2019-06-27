@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
+from django.views import generic
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.views import generic
+
 from .models import Player, Game
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
@@ -131,6 +133,9 @@ class ProfileView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Get Player object
+        player = Player.objects.get(user_id=self.object.id)
+
         if self.request.user.is_authenticated:
             # Add authenticated user to context if user is currently logged in
             context['request_user'] = self.request.user
@@ -139,16 +144,21 @@ class ProfileView(generic.DetailView):
             request_player = Player.objects.get(user_id=self.request.user.id)
             context['request_user_friends_list'] = list(request_player.friends.all())
 
-        player = Player.objects.get(user_id=self.object.id)
+            # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
+            context['games_list'] = Game.objects.filter(players=player, private=False) \
+                                    | Game.objects.filter(players=player).filter(players=request_player) \
+                                    | Game.objects.filter(players=player, admin=request_player)
+            context['games_list'] = context['games_list'].distinct()
+
+        else:
+            # Add public games
+            context['games_list'] = Game.objects.filter(players=player, private=False)
         
         # Add profile player to context
         context['player'] = player
 
         # Add profile player friends list to context
-        context['friends_list'] = list(player.friends.all())
-
-        # Add profile player games list to context
-        context['games_list'] = Game.objects.filter(players=player)        
+        context['friends_list'] = list(player.friends.all()) 
         
         return context
 
