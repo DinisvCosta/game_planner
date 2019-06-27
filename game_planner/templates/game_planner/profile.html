@@ -7,7 +7,7 @@
     <p>Email: {{ profile_user.email }}</p>
     <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
 
-{% elif request_user_friends_list %}
+{% elif request_user %}
 
     {% if player not in request_user_friends_list %}
 
