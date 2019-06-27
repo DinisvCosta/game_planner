@@ -123,10 +123,6 @@ def game_detail(request, pk):
 
     return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized})
 
-@login_required
-def friends(request):
-    return HttpResponse("Friends Info Page")
-
 class ProfileView(generic.DetailView):
     model = User
     template_name = 'game_planner/profile.html'
@@ -144,8 +140,6 @@ class ProfileView(generic.DetailView):
 
         # Add profile player to context
         context['player'] = player
-
-        print(context['friends_list'])
         
         # Add players friends list to context if user is currently logged in
         request_player = Player.objects.get(user_id=self.request.user.id)
