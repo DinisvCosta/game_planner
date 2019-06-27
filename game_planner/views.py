@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
+from datetime import date, datetime
+
 from .models import Player, Game
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
@@ -145,14 +147,17 @@ class ProfileView(generic.DetailView):
             context['request_user_friends_list'] = list(request_player.friends.all())
 
             # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
-            context['games_list'] = Game.objects.filter(players=player, private=False) \
+            games = Game.objects.filter(players=player, private=False) \
                                     | Game.objects.filter(players=player).filter(players=request_player) \
                                     | Game.objects.filter(players=player, admin=request_player)
-            context['games_list'] = context['games_list'].distinct()
+            games = games.distinct()
 
         else:
             # Add public games
-            context['games_list'] = Game.objects.filter(players=player, private=False)
+            games = Game.objects.filter(players=player, private=False)
+
+        context['past_games'] = games.filter(when__lte=datetime.now())
+        context['upcoming_games'] = games.filter(when__gt=datetime.now())
         
         # Add profile player to context
         context['player'] = player

@@ -39,12 +39,24 @@
 
 {% endif %}
 
-{% if games_list %}
+{% if upcoming_games %}
 
     <p>Upcoming games:</p>
 
     <ul>
-        {% for game in games_list %}
+        {% for game in upcoming_games %}
+            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game }}</a></li>
+        {% endfor %}
+    </ul>
+
+{% endif %}
+
+{% if past_games %}
+
+    <p>Past games:</p>
+
+    <ul>
+        {% for game in past_games %}
             <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game }}</a></li>
         {% endfor %}
     </ul>
