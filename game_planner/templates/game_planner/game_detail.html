@@ -1,12 +1,13 @@
 {% if authorized %}
 
-    <p>Name: {{ game.name }}</p>
+    <p>Game Name: {{ game.name }}</p>
     <p>Admin: {{ game.admin }}</p>
 
     {% if game.players %}
+    <p>Players:</p>
     <ul>
         {% for player in game.players.all %}
-            <li> {{ player.user.username }} </li>
+            <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
         {% endfor %}
     </ul>
     {% endif %}
