@@ -131,8 +131,13 @@ class ProfileView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Add request user to context if user is currently logged in
-        context['request_user'] = self.request.user
+        if self.request.user.is_authenticated:
+            # Add authenticated user to context if user is currently logged in
+            context['request_user'] = self.request.user
+
+            # Add players friends list to context if user is currently logged in
+            request_player = Player.objects.get(user_id=self.request.user.id)
+            context['request_user_friends_list'] = list(request_player.friends.all())
 
         # Add profile player friends list to context
         player = Player.objects.get(user_id=self.object.id)
@@ -140,10 +145,6 @@ class ProfileView(generic.DetailView):
 
         # Add profile player to context
         context['player'] = player
-        
-        # Add players friends list to context if user is currently logged in
-        request_player = Player.objects.get(user_id=self.request.user.id)
-        context['request_user_friends_list'] = list(request_player.friends.all())
         
         return context
 
