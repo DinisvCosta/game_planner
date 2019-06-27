@@ -30,10 +30,10 @@
 {% if friends_list %}
 
     <p>Friends:</p>
-    
+
     <ul>
         {% for player in friends_list %}
-            <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
+            <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player }}</a></li>
         {% endfor %}
     </ul>
 
@@ -45,7 +45,7 @@
 
     <ul>
         {% for game in games_list %}
-            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
+            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game }}</a></li>
         {% endfor %}
     </ul>
 

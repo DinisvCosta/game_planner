@@ -17,7 +17,7 @@ class Player(models.Model):
     number_of_games_played = models.IntegerField(default=0)
 
     def __str__(self):
-        string = self.user.username + ", user_id:" + str(self.user.id)
+        string = self.user.username
         return string
 
 class Game(models.Model):
@@ -32,7 +32,7 @@ class Game(models.Model):
     private = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return str(self.when) + " - " + self.name
 
     # Checks if Game is in the future to help only displaying relevant games to player in the games page.
     def is_in_the_future(self):
