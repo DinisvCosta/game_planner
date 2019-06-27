@@ -139,12 +139,16 @@ class ProfileView(generic.DetailView):
             request_player = Player.objects.get(user_id=self.request.user.id)
             context['request_user_friends_list'] = list(request_player.friends.all())
 
-        # Add profile player friends list to context
         player = Player.objects.get(user_id=self.object.id)
-        context['friends_list'] = list(player.friends.all())
-
+        
         # Add profile player to context
         context['player'] = player
+
+        # Add profile player friends list to context
+        context['friends_list'] = list(player.friends.all())
+
+        # Add profile player games list to context
+        context['games_list'] = Game.objects.filter(players=player)        
         
         return context
 

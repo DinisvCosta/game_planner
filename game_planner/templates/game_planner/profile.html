@@ -27,10 +27,26 @@
 
 {% endif %}
 
-<p>Friends:</p>
+{% if friends_list %}
 
-<ul>
-    {% for player in friends_list %}
-        <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
-    {% endfor %}
-</ul>
+    <p>Friends:</p>
+    
+    <ul>
+        {% for player in friends_list %}
+            <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player.user.username }}</a></li>
+        {% endfor %}
+    </ul>
+
+{% endif %}
+
+{% if games_list %}
+
+    <p>Upcoming games:</p>
+
+    <ul>
+        {% for game in games_list %}
+            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
+        {% endfor %}
+    </ul>
+
+{% endif %}
