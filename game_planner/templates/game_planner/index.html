@@ -1,12 +1,35 @@
+{% load static %}
+<script>
+    var csrftoken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'game_planner/script.js' %}"></script>
+
 {% if user.is_authenticated %}
     <a href="{% url 'game_planner:logout' %}">Logout</a><br>
-    <a href="{% url 'game_planner:profile' user.id %}">Profile</a><br>
+    <a href="{% url 'game_planner:profile' user.pk %}">Profile</a><br>
     <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
     <a href="{% url 'game_planner:create_game' %}">CreateGame</a><br>
     <a href="{% url 'game_planner:games' %}">Games</a><br>
     <a href="{% url 'game_planner:players' %}">Players</a><br>
+
+    {% if notifications %}
+
+    <p>Notifications:</p>
+
+    <ul>
+        {% for notification in notifications %}
+            <!-- <li><a href="javascript:mark_as_read({{ notification.id }});"> {{ notification }} </a></li> -->
+            <!-- <p onclick="mark_as_read('{{ notification.id }}')">{{ notification }}</p> -->
+            <button onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
+        {% endfor %}
+    </ul>
+
+    {% endif %}
+
 {% else %}
+
     <a href="{% url 'game_planner:login' %}">Login</a><br>
     <a href="{% url 'game_planner:signup' %}">Signup</a><br>
     <a href="{% url 'game_planner:players' %}">Players</a><br>
+
 {% endif %}

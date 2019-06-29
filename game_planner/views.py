@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
@@ -10,11 +12,18 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from .models import Player, Game
+from .models import Player, Game, Notification
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
 def index(request):
-    return render(request, 'game_planner/index.html', {'user': request.user})
+    params = {'user': request.user}
+
+    if request.user.is_authenticated:
+        player = Player.objects.get(user_id=request.user.id)
+        notifications = Notification.objects.filter(player=player.id, read=False)
+        params['notifications'] = notifications
+
+    return render(request, 'game_planner/index.html', params)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -178,3 +187,18 @@ def remove_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
     player.friends.remove(pk)
     return redirect('game_planner:profile', pk=pk)
+
+@login_required
+def notification_read(request):
+    request_player = Player.objects.get(user_id=request.user.id)
+    request_json = json.loads(request.body)
+    notification_id = request_json['notification_id']
+
+    notification = Notification.objects.get(pk=notification_id)
+
+    if notification.player_id == request_player.id:
+        notification.read = True
+        notification.read_datetime = datetime.now()
+        notification.save()
+
+    return HttpResponse("Notification marked as read")
