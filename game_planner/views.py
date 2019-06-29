@@ -180,6 +180,13 @@ class ProfileView(generic.DetailView):
 def add_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
     player.friends.add(pk)
+
+    notification = Notification(notification_type="ADDED_AS_FRIEND",
+                                text=player.user.username + " added you as a friend.",
+                                creation_datetime=datetime.now(),
+                                player_id=pk)
+    notification.save()
+
     return redirect('game_planner:profile', pk=pk)
 
 @login_required

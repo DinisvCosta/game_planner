@@ -38,7 +38,7 @@ class Game(models.Model):
         return self.when > datetime.now()
 
 class Notification(models.Model):
-    notifitation_type = models.CharField(max_length=20)
+    notification_type = models.CharField(max_length=20)
     text = models.CharField(max_length=100)
     creation_datetime = models.DateTimeField()
     read_datetime = models.DateTimeField(null=True, blank=True)
