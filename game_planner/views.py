@@ -155,6 +155,13 @@ class ProfileView(generic.DetailView):
             request_player = Player.objects.get(user_id=self.request.user.id)
             context['request_user_friends_list'] = list(request_player.friends.all())
 
+            # Check if there's an existing active request
+            active_friend_request = FriendRequest.objects.filter(request_from=request_player, request_to=player)
+            context['active_friend_request'] = list(active_friend_request)
+            print()
+            print(list(active_friend_request))
+            print()
+
             # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
             games = Game.objects.filter(players=player, private=False) \
                                     | Game.objects.filter(players=player).filter(players=request_player) \
@@ -212,12 +219,24 @@ def notification_read(request):
 
 @login_required
 def friend_requests(request):
-    request_player = Player.objects.get(user_id=request.user.id)
+    if request.method == 'POST':
+        print(request.body)
+        # request JSON format:
+        # {'request_from': 'tiagovcosta', 'request_to': 'matilde', 'state': 'declined'}
+        request_json = json.loads(request.body)
+        print(request_json)
+        
+        if(request_json['state'] == "accepted"):
+            FriendRequest()
+        elif(request_json['state'] == "declined"):
+            return HttpResponse("Friend request declined")
+    else:
+        request_player = Player.objects.get(user_id=request.user.id)
 
-    friend_requests = FriendRequest.objects.filter(request_to=request_player, accepted__isnull=True)
+        friend_requests = FriendRequest.objects.filter(request_to=request_player, accepted__isnull=True)
 
-    params = {}
-    params['number_of_requests'] = len(friend_requests)
-    params['friend_requests'] = friend_requests
+        params = {}
+        params['number_of_requests'] = len(friend_requests)
+        params['friend_requests'] = friend_requests
 
-    return render(request, 'game_planner/friend_requests.html', params)
+        return render(request, 'game_planner/friend_requests.html', params)

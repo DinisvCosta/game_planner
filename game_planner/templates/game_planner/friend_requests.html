@@ -1,9 +1,15 @@
+{% load static %}
+<script>
+    var csrftoken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'game_planner/script.js' %}"></script>
+
 <p>You have {{ number_of_requests }} friend requests</p>
 
 <ul>
     {% for friend_request in friend_requests %}
         <li><a href="{% url 'game_planner:profile' friend_request.request_from.user.id %}">{{ friend_request.request_from }}</a></li>
-        <button onclick="confirm_friend_request('{{ friend_request.request_from }}')">Confirm</button>
-        <button onclick="mark_as_read('{{ notification.pk }}')">Delete</button>
+        <button onclick="confirm_friend_request('{{ friend_request.request_from }}','{{ friend_request.request_to }}')">Confirm</button>
+        <button onclick="delete_friend_request('{{ friend_request.request_from }}','{{ friend_request.request_to }}')">Delete</button>
     {% endfor %}
 </ul>
