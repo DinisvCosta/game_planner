@@ -17,5 +17,6 @@ urlpatterns = [
     path('create_game/', views.create_game, name='create_game'),
     path('games/', login_required(views.GamesListView.as_view()), name='games'),
     path('games/<str:pk>/', views.game_detail, name='game_detail'),
+    path('friend_requests/', views.friend_requests, name='friend_requests'),
     path('notification_read/', views.notification_read, name='notification_read'),
 ]

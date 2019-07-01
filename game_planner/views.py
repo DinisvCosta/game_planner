@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from .models import Player, Game, Notification
+from .models import Player, Game, Notification, FriendRequest
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
 
 def index(request):
@@ -209,3 +209,15 @@ def notification_read(request):
         notification.save()
 
     return HttpResponse("Notification marked as read")
+
+@login_required
+def friend_requests(request):
+    request_player = Player.objects.get(user_id=request.user.id)
+
+    friend_requests = FriendRequest.objects.filter(request_to=request_player, accepted__isnull=True)
+
+    params = {}
+    params['number_of_requests'] = len(friend_requests)
+    params['friend_requests'] = friend_requests
+
+    return render(request, 'game_planner/friend_requests.html', params)

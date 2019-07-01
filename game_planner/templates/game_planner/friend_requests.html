@@ -1,0 +1,9 @@
+<p>You have {{ number_of_requests }} friend requests</p>
+
+<ul>
+    {% for friend_request in friend_requests %}
+        <li><a href="{% url 'game_planner:profile' friend_request.request_from.user.id %}">{{ friend_request.request_from }}</a></li>
+        <button onclick="confirm_friend_request('{{ friend_request.request_from }}')">Confirm</button>
+        <button onclick="mark_as_read('{{ notification.pk }}')">Delete</button>
+    {% endfor %}
+</ul>

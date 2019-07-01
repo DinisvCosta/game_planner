@@ -47,3 +47,16 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.text
+
+class FriendRequest(models.Model):
+    request_from = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_from')
+    request_to = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_to')
+    request_datetime = models.DateTimeField()
+    action_taken_datetime = models.DateTimeField(null=True, blank=True)
+    accepted = models.BooleanField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-request_datetime']
+
+    def __str__(self):
+        return "Friend request from " + self.request_from.user.username + " to " + self.request_to.user.username
