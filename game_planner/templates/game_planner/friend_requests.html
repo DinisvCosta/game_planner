@@ -4,12 +4,14 @@
 </script>
 <script src="{% static 'game_planner/script.js' %}"></script>
 
-<p>You have {{ number_of_requests }} friend requests</p>
+<p>Friend requests</p>
 
 <ul>
     {% for friend_request in friend_requests %}
-        <li id="request_{{ friend_request.pk }}"><a href="{% url 'game_planner:profile' friend_request.request_from.user.id %}">{{ friend_request.request_from }}</a></li>
-        <button id="request_{{ friend_request.pk }}_confirm_button" onclick="confirm_friend_request('{{ friend_request.pk }}')">Confirm</button>
-        <button id="request_{{ friend_request.pk }}_delete_button" onclick="delete_friend_request('{{ friend_request.pk }}')">Delete</button>
+    <li>
+        <a href="{% url 'game_planner:profile' friend_request.request_from.user.id %}">{{ friend_request.request_from }}</a>
+        <button onclick="reply('/friend_requests/', 'accepted', '{{ friend_request.pk }}', this)">Confirm</button>
+        <button onclick="reply('/friend_requests/', 'declined', '{{ friend_request.pk }}', this)">Delete</button>
+    </li>
     {% endfor %}
 </ul>
