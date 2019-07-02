@@ -2,7 +2,7 @@ import json
 
 from django.conf import settings
 from django.shortcuts import redirect, render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.views import generic
 
 from django.contrib import messages
@@ -185,17 +185,19 @@ class ProfileView(generic.DetailView):
 
 @login_required
 def add_friend(request, pk):
-    player = Player.objects.get(user_id=request.user.id)
-    player.friends.add(pk)
+    # player = Player.objects.get(user_id=request.user.id)
+    # player.friends.add(pk)
 
-    notification = Notification(notification_type="ADDED_AS_FRIEND",
-                                text=player.user.username + " added you as a friend.",
+    # Create friend request and send notification to user
+
+    notification = Notification(notification_type="SENT_FRIEND_REQUEST",
+                                text=player.user.username + " wants to be your friend.",
                                 creation_datetime=datetime.now(),
                                 player_id=pk)
     notification.save()
 
     return redirect('game_planner:profile', pk=pk)
-
+    
 @login_required
 def remove_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
@@ -219,20 +221,46 @@ def notification_read(request):
 
 @login_required
 def friend_requests(request):
+    # Deal with friend request "Confirm" or "Delete" button press
     if request.method == 'POST':
-        print(request.body)
-        # request JSON format:
-        # {'request_from': 'tiagovcosta', 'request_to': 'matilde', 'state': 'declined'}
         request_json = json.loads(request.body)
-        print(request_json)
-        
-        if(request_json['state'] == "accepted"):
-            FriendRequest()
-        elif(request_json['state'] == "declined"):
-            return HttpResponse("Friend request declined")
+
+        friend_request = FriendRequest.objects.get(pk=request_json['friend_request'])
+
+        if request.user.id == friend_request.request_to.user.id:
+            if(request_json['state'] == "accepted"):
+                # Add to player's friends list and send notification to new friend
+                player = Player.objects.get(user_id=request.user.id)
+                player.friends.add(friend_request.request_from.user.id)
+
+                notification = Notification(notification_type="ADDED_AS_FRIEND",
+                                text=player.user.username + " accepted your friend request.",
+                                creation_datetime=datetime.now(),
+                                player_id=friend_request.request_from.user.id)
+                notification.save()
+
+                # Update friend_request accepted flag and save datetime of action_taken
+                friend_request.accepted = True
+                friend_request.action_taken_datetime = datetime.now()
+                friend_request.save()
+
+                return HttpResponse("OK")
+
+            elif(request_json['state'] == "declined"):
+                # Update friend_request accepted flag and save datetime of action_taken
+                friend_request.accepted = False
+                friend_request.action_taken_datetime = datetime.now()
+                friend_request.save()
+
+                return HttpResponse("OK")
+        else:
+            return HttpResponseForbidden()
+    
+    # Display Friend Requests page
     else:
         request_player = Player.objects.get(user_id=request.user.id)
 
+        # friend requests list only shows requests that are still pending received by authenticated user
         friend_requests = FriendRequest.objects.filter(request_to=request_player, accepted__isnull=True)
 
         params = {}

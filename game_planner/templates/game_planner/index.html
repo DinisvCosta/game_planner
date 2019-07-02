@@ -19,9 +19,7 @@
 
     <ul>
         {% for notification in notifications %}
-            <!-- <li><a href="javascript:mark_as_read({{ notification.id }});"> {{ notification }} </a></li> -->
-            <!-- <p onclick="mark_as_read('{{ notification.id }}')">{{ notification }}</p> -->
-            <button onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
+            <button id="notification_{{ notification.pk }}" onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
         {% endfor %}
     </ul>
 
