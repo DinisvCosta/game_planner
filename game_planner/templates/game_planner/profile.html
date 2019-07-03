@@ -1,3 +1,9 @@
+{% load static %}
+<script>
+    var csrftoken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'game_planner/script.js' %}"></script>
+
 <p>Username: {{ profile_user.username }}</p>
 <p>First Name: {{ profile_user.first_name }}</p>
 <p>Last Name: {{ profile_user.last_name }}</p>
@@ -9,19 +15,43 @@
 
 {% elif request_user %}
 
-    {% if player not in request_user_friends_list %}
-
-        <form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
-            {% csrf_token %}
-            <input id="add_friend_button" type="submit" value="Add Friend" />
-        </form>
-
-    {% else %}
+    {% if are_friends %}
 
         <form action="{% url 'game_planner:remove_friend' profile_user.id %}" method="POST">
             {% csrf_token %}
             <input id="remove_friend_button" type="submit" value="Remove Friend" />
         </form>
+
+    {% else %}
+
+        {% if not incoming_request and not outgoing_request %}
+
+            <form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
+                {% csrf_token %}
+                <input id="add_friend_button" type="submit" value="Add Friend" />
+            </form>
+
+        {% elif incoming_request %}
+
+            {% for friend_request in incoming_request %}
+
+                <div>
+                    <p>{{ profile_user.username }} has sent you a friend request.</p>
+                    <button onclick="reply('/friend_requests/', 'accepted', '{{ friend_request.pk }}', this)">Confirm</button>
+                    <button onclick="reply('/friend_requests/', 'declined', '{{ friend_request.pk }}', this)">Delete</button>
+                </div>
+
+            {% endfor %}
+
+        {% elif outgoing_request %}
+
+            {% for friend_request in outgoing_request %}
+
+                <button onclick="reply('/friend_requests/', 'cancel', '{{ friend_request.pk }}', this)">Cancel friend request</button>
+
+            {% endfor %}
+
+        {% endif %}
 
     {% endif %}
 

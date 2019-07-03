@@ -43,6 +43,7 @@ class Notification(models.Model):
     creation_datetime = models.DateTimeField()
     read_datetime = models.DateTimeField(null=True, blank=True)
     read = models.BooleanField(default=False)
+    target_url = models.URLField(null=True, blank=True)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -53,7 +54,7 @@ class FriendRequest(models.Model):
     request_to = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_to')
     request_datetime = models.DateTimeField()
     action_taken_datetime = models.DateTimeField(null=True, blank=True)
-    accepted = models.BooleanField(null=True, blank=True)
+    state = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         ordering = ['-request_datetime']

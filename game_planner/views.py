@@ -153,14 +153,17 @@ class ProfileView(generic.DetailView):
 
             # Add players friends list to context if user is currently logged in
             request_player = Player.objects.get(user_id=self.request.user.id)
-            context['request_user_friends_list'] = list(request_player.friends.all())
 
-            # Check if there's an existing active request
-            active_friend_request = FriendRequest.objects.filter(request_from=request_player, request_to=player)
-            context['active_friend_request'] = list(active_friend_request)
-            print()
-            print(list(active_friend_request))
-            print()
+            # Add are_friends flag to context
+            context['are_friends'] = player in list(request_player.friends.all())
+
+            # Check if there's an existing active outgoing request
+            outgoing_request = FriendRequest.objects.filter(request_from=request_player, request_to=player, state__isnull=True)
+            context['outgoing_request'] = outgoing_request
+
+            # Check if there's an existing active incoming request
+            incoming_request = FriendRequest.objects.filter(request_from=player, request_to=request_player, state__isnull=True)
+            context['incoming_request'] = incoming_request
 
             # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
             games = Game.objects.filter(players=player, private=False) \
@@ -185,19 +188,31 @@ class ProfileView(generic.DetailView):
 
 @login_required
 def add_friend(request, pk):
-    # player = Player.objects.get(user_id=request.user.id)
-    # player.friends.add(pk)
+    # Check if there's already a request
+    requester_player = Player.objects.get(user_id=request.user.id)
+    requested_player = Player.objects.get(user_id=pk)
 
-    # Create friend request and send notification to user
-
-    notification = Notification(notification_type="SENT_FRIEND_REQUEST",
-                                text=player.user.username + " wants to be your friend.",
-                                creation_datetime=datetime.now(),
-                                player_id=pk)
-    notification.save()
-
-    return redirect('game_planner:profile', pk=pk)
+    active_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
     
+    if active_request:
+        return HttpResponseForbidden()
+    else:
+        request_datetime = datetime.now()
+
+        # Create friend request and send notification to user
+        friend_request = FriendRequest(request_from=requester_player,
+                                        request_to=requested_player,
+                                        request_datetime=request_datetime)
+        friend_request.save()
+    
+        notification = Notification(notification_type="SENT_FRIEND_REQUEST",
+                                    text=requester_player.user.username + " wants to be your friend.",
+                                    creation_datetime=request_datetime,
+                                    target_url='game_planner:friend_requests',
+                                    player_id=requested_player.id)
+        notification.save()
+        return redirect('game_planner:profile', pk=pk)
+
 @login_required
 def remove_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
@@ -216,43 +231,85 @@ def notification_read(request):
         notification.read = True
         notification.read_datetime = datetime.now()
         notification.save()
+    
+    # if notification.target_url:
+    #     print(notification.target_url)
+    #     return redirect(notification.target_url)
 
     return HttpResponse("Notification marked as read")
 
 @login_required
 def friend_requests(request):
-    # Deal with friend request "Confirm" or "Delete" button press
+    # Deal with friend request "Confirm", "Delete", "Cancel friend request" button press
     if request.method == 'POST':
         request_json = json.loads(request.body)
 
         friend_request = FriendRequest.objects.get(pk=request_json['friend_request'])
 
+        # Receiving player confirms or deletes friend request
         if request.user.id == friend_request.request_to.user.id:
             if(request_json['state'] == "accepted"):
+                request_datetime = datetime.now()
+
                 # Add to player's friends list and send notification to new friend
                 player = Player.objects.get(user_id=request.user.id)
                 player.friends.add(friend_request.request_from.user.id)
 
                 notification = Notification(notification_type="ADDED_AS_FRIEND",
-                                text=player.user.username + " accepted your friend request.",
-                                creation_datetime=datetime.now(),
-                                player_id=friend_request.request_from.user.id)
+                                            text=player.user.username + " accepted your friend request.",
+                                            creation_datetime=request_datetime,
+                                            player_id=friend_request.request_from.user.id)
                 notification.save()
 
-                # Update friend_request accepted flag and save datetime of action_taken
-                friend_request.accepted = True
-                friend_request.action_taken_datetime = datetime.now()
+                # Update friend_request state and save datetime of action_taken
+                friend_request.state = "ACCEPTED"
+                friend_request.action_taken_datetime = request_datetime
                 friend_request.save()
+
+                # Remove notification from requested player if it still is unread
+                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                                                            creation_datetime=friend_request.request_datetime,
+                                                            player_id=friend_request.request_to,
+                                                            read=False)
+                if notification:
+                    notification.delete()
 
                 return HttpResponse("OK")
 
             elif(request_json['state'] == "declined"):
-                # Update friend_request accepted flag and save datetime of action_taken
-                friend_request.accepted = False
+                # Update friend_request state and save datetime of action_taken
+                friend_request.state = "DECLINED"
                 friend_request.action_taken_datetime = datetime.now()
                 friend_request.save()
 
+                # Remove notification from requested player if it still is unread
+                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                                                            creation_datetime=friend_request.request_datetime,
+                                                            player_id=friend_request.request_to,
+                                                            read=False)
+                if notification:
+                    notification.delete()
+
                 return HttpResponse("OK")
+        
+        # Sender cancels friend request
+        elif request.user.id == friend_request.request_from.user.id:
+            # Update friend_request state and save datetime of action_taken
+            if(request_json['state'] == 'cancel'):
+                friend_request.state = 'CANCELED'
+                friend_request.action_taken_datetime = datetime.now()
+                friend_request.save()
+                
+                # Remove notification from requested player
+                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                                                            creation_datetime=friend_request.request_datetime,
+                                                            player_id=friend_request.request_to,
+                                                            read=False)
+                if notification:
+                    notification.delete()
+                
+                return HttpResponse("OK")
+                
         else:
             return HttpResponseForbidden()
     
@@ -261,10 +318,9 @@ def friend_requests(request):
         request_player = Player.objects.get(user_id=request.user.id)
 
         # friend requests list only shows requests that are still pending received by authenticated user
-        friend_requests = FriendRequest.objects.filter(request_to=request_player, accepted__isnull=True)
+        friend_requests = FriendRequest.objects.filter(request_to=request_player, state__isnull=True)
 
         params = {}
-        params['number_of_requests'] = len(friend_requests)
         params['friend_requests'] = friend_requests
 
         return render(request, 'game_planner/friend_requests.html', params)
