@@ -15,13 +15,16 @@
 
     {% if notifications %}
 
-    <p>Notifications:</p>
+        <p>Notifications:</p>
 
-    <ul>
-        {% for notification in notifications %}
-            <button id="notification_{{ notification.pk }}" onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
-        {% endfor %}
-    </ul>
+        <ul>
+            {% for notification in notifications %}
+            <li>
+                <a href="{% url notification.target_url %}?notif_id={{ notification.pk }}">GO TO</a>
+                <button id="notification_{{ notification.pk }}" onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
+            </li>
+            {% endfor %}
+        </ul>
 
     {% endif %}
 

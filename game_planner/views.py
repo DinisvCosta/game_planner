@@ -2,7 +2,7 @@ import json
 
 from django.conf import settings
 from django.shortcuts import redirect, render, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.views import generic
 
 from django.contrib import messages
@@ -219,27 +219,37 @@ def remove_friend(request, pk):
     player.friends.remove(pk)
     return redirect('game_planner:profile', pk=pk)
 
-@login_required
-def notification_read(request):
-    request_player = Player.objects.get(user_id=request.user.id)
-    request_json = json.loads(request.body)
-    notification_id = request_json['notification_id']
-
+def notification_read_common(user_id, notification_id):
+    request_player = Player.objects.get(user_id=user_id)
     notification = Notification.objects.get(pk=notification_id)
 
     if notification.player_id == request_player.id:
         notification.read = True
         notification.read_datetime = datetime.now()
         notification.save()
-    
-    # if notification.target_url:
-    #     print(notification.target_url)
-    #     return redirect(notification.target_url)
+        
+        return True
+    else:
+        return False
 
-    return HttpResponse("Notification marked as read")
+@login_required
+def notification_read(request):
+    request_json = json.loads(request.body)
+    notification_id = request_json['notification_id']
+
+    result = notification_read_common(request.user.id, notification_id)
+
+    if(result):
+        return HttpResponse()
+    else:
+        return HttpResponseNotFound()
 
 @login_required
 def friend_requests(request):
+
+    if request.GET['notif_id']:
+        notification_read_common(request.user.id, request.GET['notif_id'])
+
     # Deal with friend request "Confirm", "Delete", "Cancel friend request" button press
     if request.method == 'POST':
         request_json = json.loads(request.body)
