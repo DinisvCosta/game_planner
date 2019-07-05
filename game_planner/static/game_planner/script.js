@@ -1,12 +1,11 @@
-function mark_as_read(notification_id) {
+function mark_as_read(notification_id, elem) {
 
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             // Remove notification from page
-            var notification_element = "notification_" + notification_id
-            document.getElementById(notification_element).outerHTML = "";
+            elem.parentNode.parentNode.removeChild(elem.parentNode);
         }
     };
 

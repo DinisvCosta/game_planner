@@ -238,16 +238,16 @@ def notification_read(request):
     notification_id = request_json['notification_id']
 
     result = notification_read_common(request.user.id, notification_id)
-
+    
     if(result):
-        return HttpResponse()
+        return HttpResponse("OK")
     else:
         return HttpResponseNotFound()
 
 @login_required
 def friend_requests(request):
 
-    if request.GET['notif_id']:
+    if request.GET and request.GET['notif_id']:
         notification_read_common(request.user.id, request.GET['notif_id'])
 
     # Deal with friend request "Confirm", "Delete", "Cancel friend request" button press

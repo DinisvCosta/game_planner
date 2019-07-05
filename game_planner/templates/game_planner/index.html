@@ -20,8 +20,11 @@
         <ul>
             {% for notification in notifications %}
             <li>
-                <a href="{% url notification.target_url %}?notif_id={{ notification.pk }}">GO TO</a>
-                <button id="notification_{{ notification.pk }}" onclick="mark_as_read('{{ notification.pk }}')">{{ notification }}</button>
+                <p>{{ notification }}</p>
+                {% if notification.target_url %}
+                    <a href="{% url notification.target_url %}?notif_id={{ notification.pk }}">Go to</a>
+                {% endif %}
+                <button onclick="mark_as_read('{{ notification.pk }}', this)">Mark as read</button>
             </li>
             {% endfor %}
         </ul>

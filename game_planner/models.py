@@ -43,7 +43,7 @@ class Notification(models.Model):
     creation_datetime = models.DateTimeField()
     read_datetime = models.DateTimeField(null=True, blank=True)
     read = models.BooleanField(default=False)
-    target_url = models.URLField(null=True, blank=True)
+    target_url = models.CharField(max_length=100, null=True, blank=True)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
     def __str__(self):
