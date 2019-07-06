@@ -216,8 +216,19 @@ def add_friend(request, pk):
 @login_required
 def remove_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
-    player.friends.remove(pk)
-    return redirect('game_planner:profile', pk=pk)
+    player_to_remove = Player.objects.get(user_id=pk)
+    player.friends.remove(player_to_remove.pk)
+
+    # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
+    notification = Notification.objects.filter(notification_type="ADDED_AS_FRIEND",
+                                                text=player.user.username + " accepted your friend request.",
+                                                player_id=player_to_remove,
+                                                read=False)
+    
+    if notification:
+        notification.delete()
+
+    return redirect('game_planner:profile', pk=player_to_remove.pk)
 
 def notification_read_common(user_id, notification_id):
     request_player = Player.objects.get(user_id=user_id)
