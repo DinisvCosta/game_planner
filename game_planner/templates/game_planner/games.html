@@ -6,6 +6,8 @@
 <ul>
 {% for game in games.administered %}
     <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
+    <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
+    <p></p>
 {% endfor %}
 </ul>
 {% endif %}

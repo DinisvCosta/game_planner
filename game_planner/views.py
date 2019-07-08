@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from datetime import date, datetime
 
 from .models import Player, Game, Notification, FriendRequest
-from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm
+from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm, ManageGameForm
 
 def index(request):
     params = {'user': request.user}
@@ -78,7 +78,7 @@ def manage_profile(request):
         form = ManageProfileForm(request.POST, user=request.user)
         if form.is_valid():
             update_session_auth_hash(request, form.user)
-            return redirect('game_planner:profile')
+            return redirect('game_planner:profile', pk=request.user.id)
     else:
         form = ManageProfileForm()
     return render(request, 'game_planner/manage_profile.html', {'form': form})
@@ -94,6 +94,26 @@ def create_game(request):
         form = CreateGameForm()
     return render(request, 'game_planner/create_game.html', {'form': form})
 
+@login_required
+def manage_game(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    player = Player.objects.get(user_id=request.user.id)
+    is_admin = (player == game.admin)
+
+    if is_admin:
+
+        if request.method == 'POST':
+            form = ManageGameForm(request.POST, game=game)
+            if form.is_valid():
+                return redirect('game_planner:game_detail', pk=pk)
+        else:
+            form = ManageGameForm()
+        
+        return render(request, 'game_planner/manage_game.html', {'form': form})
+
+    else:
+        return HttpResponseForbidden()
+        
 class GamesListView(generic.ListView):
     model = Game
     template_name = "game_planner/games.html"
@@ -133,8 +153,9 @@ def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     player = Player.objects.get(user_id=request.user.id)
     authorized = (player in game.players.all()) or (player == game.admin) or not game.private
+    is_admin = (player == game.admin)
 
-    return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized})
+    return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized, 'is_admin': is_admin})
 
 class ProfileView(generic.DetailView):
     model = User
@@ -249,7 +270,7 @@ def notification_read(request):
     notification_id = request_json['notification_id']
 
     result = notification_read_common(request.user.id, notification_id)
-    
+
     if(result):
         return HttpResponse("OK")
     else:

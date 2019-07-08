@@ -175,3 +175,49 @@ class ManageProfileForm(forms.Form):
         # TODO display message notifying that no changes were applied and redirect to profile.
         if old_password == '' and new_password1 == '' and new_password2 == '' and first_name == '' and last_name == '' and email == '':
             print("DEBUG: (ManageProfileForm)(clean): No changes applied.")
+
+class ManageGameForm(forms.Form):
+    name = forms.CharField(max_length=30, required=False)
+    when = forms.DateTimeField(required=False, help_text="format: " + "2019-07-08 14:31:56")
+    where = forms.CharField(max_length=60, required=False)
+    players = PlayerModelMultipleChoiceField(queryset=Player.objects.all(), required=False)
+    price = forms.IntegerField(widget=forms.NumberInput(), required=False)
+    duration = forms.DurationField(widget=forms.TimeInput(), required=False)
+    private = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.game = kwargs.pop('game', None)
+        super(ManageGameForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        game = self.game
+        name = self.cleaned_data['name']
+        when = self.cleaned_data['when']
+        where = self.cleaned_data['where']
+        players = self.cleaned_data['players']
+        price = self.cleaned_data['price']
+        duration = self.cleaned_data['duration']
+        private = self.cleaned_data['private']
+
+        if name:
+            game.name = name
+        
+        if when:
+            game.when = when
+        
+        if where:
+            game.where = where
+
+        if players:
+            game.players.set(players)
+        
+        if price:
+            game.price = price
+        
+        if duration:
+            game.duration = duration
+
+        #TODO find new way to change privacy setting    
+        game.private = private
+        
+        game.save()

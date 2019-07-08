@@ -7,8 +7,8 @@
 {% if user.is_authenticated %}
     <a href="{% url 'game_planner:logout' %}">Logout</a><br>
     <a href="{% url 'game_planner:profile' user.pk %}">Profile</a><br>
-    <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
-    <a href="{% url 'game_planner:create_game' %}">CreateGame</a><br>
+    <a href="{% url 'game_planner:manage_profile' %}">Manage Profile</a><br>
+    <a href="{% url 'game_planner:create_game' %}">Create Game</a><br>
     <a href="{% url 'game_planner:games' %}">Games</a><br>
     <a href="{% url 'game_planner:players' %}">Players</a><br>
     <a href="{% url 'game_planner:friend_requests' %}">Friend Requests</a><br>
