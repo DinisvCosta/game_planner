@@ -35,7 +35,7 @@ class Game(models.Model):
         return str(self.when) + " - " + self.name
 
     def is_in_the_future(self):
-        return self.when > datetime.now()
+        return self.when.replace(tzinfo=None) > datetime.now()
 
 class Notification(models.Model):
     notification_type = models.CharField(max_length=20)
@@ -44,6 +44,7 @@ class Notification(models.Model):
     read_datetime = models.DateTimeField(null=True, blank=True)
     read = models.BooleanField(default=False)
     target_url = models.CharField(max_length=100, null=True, blank=True)
+    url_arg = models.CharField(max_length=20, null=True, blank=True)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -61,3 +62,16 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return "Friend request from " + self.request_from.user.username + " to " + self.request_to.user.username
+
+class GameParticipationRequest(models.Model):
+    request_from = models.ForeignKey(Player, on_delete=models.CASCADE)
+    request_to_game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    request_datetime = models.DateTimeField()
+    action_taken_datetime = models.DateTimeField(null=True, blank=True)
+    state = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-request_datetime']
+
+    def __str__(self):
+        return "Game participation request from " + self.request_from.user.username + " to " + self.request_to_game.name

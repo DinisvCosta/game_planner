@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from .models import Player, Game, Notification, FriendRequest
+from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm, ManageGameForm
 
 def index(request):
@@ -155,7 +155,9 @@ def game_detail(request, pk):
     authorized = (player in game.players.all()) or (player == game.admin) or not game.private
     is_admin = (player == game.admin)
 
-    return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized, 'is_admin': is_admin})
+    participating = player in game.players.all()
+
+    return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized, 'is_admin': is_admin, 'participating': participating})
 
 class ProfileView(generic.DetailView):
     model = User
@@ -231,6 +233,34 @@ def add_friend(request, pk):
                                     creation_datetime=request_datetime,
                                     target_url='game_planner:friend_requests',
                                     player_id=requested_player.id)
+        notification.save()
+        return redirect('game_planner:profile', pk=pk)
+
+@login_required
+def request_participation(request, pk):
+    # Check if there's already a request
+    player = Player.objects.get(user_id=request.user.id)
+    game = Game.objects.get(game_id=pk)
+
+    active_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
+    
+    if active_request:
+        return HttpResponseForbidden()
+    else:
+        request_datetime = datetime.now()
+
+        # Create game participation request and send notification to game admin
+        participation_request = GameParticipationRequest(request_from=player,
+                                                            request_to_game=game,
+                                                            request_datetime=request_datetime)
+        participation_request.save()
+    
+        notification = Notification(notification_type="PARTICIPATION_REQ",
+                                    text=player.user.username + " wants to join " + game.name + ".",
+                                    creation_datetime=request_datetime,
+                                    target_url='game_planner:manage_game',
+                                    url_arg=pk,
+                                    player_id=game.admin.id)
         notification.save()
         return redirect('game_planner:profile', pk=pk)
 

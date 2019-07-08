@@ -16,6 +16,14 @@
         </ul>
     {% endif %}
 
+    {% if not participating %}
+        <form action="{% url 'game_planner:request_participation' game.game_id %}" method="POST">
+            {% csrf_token %}
+            <input id="request_participation_button" type="submit" value="Request Participation" />
+        </form>
+    {% endif %}
+
+
 {% else %}
     <p>You're not invited to this private game.</p>
 {% endif %}
