@@ -20,7 +20,7 @@ class SignUpForm(forms.Form):
             self.add_error('username', "Username already registered, please try another.")
         
         # Display error if email is already registered
-        if User.objects.filter(email=self.cleaned_data['email']).exists():
+        if self.cleaned_data['email'] and User.objects.filter(email=self.cleaned_data['email']).exists():
             self.add_error('email', "Email already registered, please try another.")
         
 
