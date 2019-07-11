@@ -96,6 +96,10 @@ def create_game(request):
 
 @login_required
 def manage_game(request, pk):
+
+    if request.GET and request.GET['notif_id']:
+        notification_read_common(request.user.id, request.GET['notif_id'])
+
     game = get_object_or_404(Game, pk=pk)
     player = Player.objects.get(user_id=request.user.id)
     is_admin = (player == game.admin)
