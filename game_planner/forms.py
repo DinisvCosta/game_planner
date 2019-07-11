@@ -64,7 +64,7 @@ class CreateGameForm(forms.Form):
     name = forms.CharField(label="Game Name", min_length=1, max_length=30)
     when = forms.DateTimeField(label="Date", initial=datetime.datetime.now())
     where = forms.CharField(max_length=60)
-    players = PlayerModelMultipleChoiceField(queryset=Player.objects.all())
+    players = PlayerModelMultipleChoiceField(queryset=Player.objects.all(), required=False)
     price = forms.IntegerField(widget=forms.NumberInput())
     duration = forms.DurationField(widget=forms.TimeInput())
     private = forms.BooleanField(required=False)
