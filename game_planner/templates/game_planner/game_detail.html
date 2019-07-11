@@ -7,7 +7,7 @@
         <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
     {% endif %}
 
-    {% if game.players %}
+    {% if game.players.all %}
         <p>Players:</p>
         <ul>
             {% for player in game.players.all %}

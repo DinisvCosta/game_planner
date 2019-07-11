@@ -127,28 +127,32 @@ class GamesListView(generic.ListView):
         """
         Excludes any games that aren't administered by the logged in user.
         """
+        qs = super().get_queryset()
+
         user = self.request.user
         # Get player's games list
         player = Player.objects.get(user_id=user.id)
 
         games_dictionary = {}
 
-        games_dictionary['administered'] = Game.objects.filter(admin=player.id)
-        games_dictionary['invited'] = Game.objects.filter(players=player)
-        games_dictionary['public'] = Game.objects.filter(private=False)
+        games_dictionary['administered'] = qs.filter(admin=player.id)
+        games_dictionary['invited'] = qs.filter(players=player)
+        games_dictionary['public'] = qs.filter(private=False)
 
         return games_dictionary
     
 class PlayersListView(generic.ListView):
-    model = User
+    model = Player
     template_name = "game_planner/players.html"
     context_object_name = 'players'
 
     def get_queryset(self):
+        qs = super().get_queryset()
+
         # Excludes logged in user from player list
         user = self.request.user
         # Get player's games list
-        players = Player.objects.exclude(user_id=user.id)
+        players = qs.exclude(user_id=user.id)
         
         return players
 
