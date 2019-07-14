@@ -80,7 +80,7 @@ class CreateGameForm(forms.Form):
         #  Get player
         player = Player.objects.get(user_id=self.user.id)
         #  Get player's games list
-        user_games = Game.objects.filter(admin=player.id)
+        user_games = Game.objects.filter(admin=self.user)
         #  Iterate over games to check that none have the same name
         for game in user_games:
             if game.name == self.cleaned_data['name']:
@@ -92,13 +92,14 @@ class CreateGameForm(forms.Form):
 
         success = False
 
+        # Generate a new pk not already in use
         while not success:
             self.pk = pkgen()
             success = not Game.objects.filter(game_id=self.pk).exists()
 
         game = Game(game_id=self.pk,
                     name=self.cleaned_data['name'],
-                    admin=player,
+                    admin=self.user,
                     when=self.cleaned_data['when'],
                     where=self.cleaned_data['where'],
                     #players=self.cleaned_data['players'],

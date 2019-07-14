@@ -19,8 +19,7 @@ def index(request):
     params = {'user': request.user}
 
     if request.user.is_authenticated:
-        player = Player.objects.get(user_id=request.user.id)
-        notifications = Notification.objects.filter(player=player.id, read=False)
+        notifications = Notification.objects.filter(user=request.user.id, read=False)
         params['notifications'] = notifications
 
     return render(request, 'game_planner/index.html', params)
@@ -98,11 +97,10 @@ def create_game(request):
 def manage_game(request, pk):
 
     if request.GET and request.GET['notif_id']:
-        notification_read_common(request.user.id, request.GET['notif_id'])
+        notification_read_common(request.user, request.GET['notif_id'])
 
     game = get_object_or_404(Game, pk=pk)
-    player = Player.objects.get(user_id=request.user.id)
-    is_admin = (player == game.admin)
+    is_admin = (request.user == game.admin)
 
     if is_admin:
 
@@ -131,11 +129,11 @@ class GamesListView(generic.ListView):
 
         user = self.request.user
         # Get player's games list
-        player = Player.objects.get(user_id=user.id)
+        player = Player.objects.get(user_id=user)
 
         games_dictionary = {}
 
-        games_dictionary['administered'] = qs.filter(admin=player.id)
+        games_dictionary['administered'] = qs.filter(admin=user)
         games_dictionary['invited'] = qs.filter(players=player)
         games_dictionary['public'] = qs.filter(private=False)
 
@@ -151,7 +149,6 @@ class PlayersListView(generic.ListView):
 
         # Excludes logged in user from player list
         user = self.request.user
-        # Get player's games list
         players = qs.exclude(user_id=user.id)
         
         return players
@@ -160,8 +157,8 @@ class PlayersListView(generic.ListView):
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
     player = Player.objects.get(user_id=request.user.id)
-    authorized = (player in game.players.all()) or (player == game.admin) or not game.private
-    is_admin = (player == game.admin)
+    is_admin = (request.user == game.admin)
+    authorized = (player in game.players.all()) or is_admin or not game.private
 
     participating = player in game.players.all()
 
@@ -199,7 +196,7 @@ class ProfileView(generic.DetailView):
             # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
             games = Game.objects.filter(players=player, private=False) \
                                     | Game.objects.filter(players=player).filter(players=request_player) \
-                                    | Game.objects.filter(players=player, admin=request_player)
+                                    | Game.objects.filter(players=player, admin=self.request.user)
             games = games.distinct()
 
         else:
@@ -240,7 +237,7 @@ def add_friend(request, pk):
                                     text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
                                     target_url='game_planner:friend_requests',
-                                    player_id=requested_player.id)
+                                    user=requested_player.user)
         notification.save()
         return redirect('game_planner:profile', pk=pk)
 
@@ -268,32 +265,31 @@ def request_participation(request, pk):
                                     creation_datetime=request_datetime,
                                     target_url='game_planner:manage_game',
                                     url_arg=pk,
-                                    player_id=game.admin.id)
+                                    user=game.admin)
         notification.save()
-        return redirect('game_planner:profile', pk=pk)
+        return redirect('game_planner:game_detail', pk=pk)
 
 @login_required
 def remove_friend(request, pk):
     player = Player.objects.get(user_id=request.user.id)
     player_to_remove = Player.objects.get(user_id=pk)
-    player.friends.remove(player_to_remove.pk)
+    player.friends.remove(player_to_remove)
 
     # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
     notification = Notification.objects.filter(notification_type="ADDED_AS_FRIEND",
                                                 text=player.user.username + " accepted your friend request.",
-                                                player_id=player_to_remove,
+                                                user=player_to_remove.user,
                                                 read=False)
     
     if notification:
         notification.delete()
 
-    return redirect('game_planner:profile', pk=player_to_remove.pk)
+    return redirect('game_planner:profile', pk=player_to_remove.user_id)
 
-def notification_read_common(user_id, notification_id):
-    request_player = Player.objects.get(user_id=user_id)
+def notification_read_common(user, notification_id):
     notification = Notification.objects.get(pk=notification_id)
 
-    if notification.player_id == request_player.id:
+    if notification.user == user:
         notification.read = True
         notification.read_datetime = datetime.now()
         notification.save()
@@ -307,7 +303,7 @@ def notification_read(request):
     request_json = json.loads(request.body)
     notification_id = request_json['notification_id']
 
-    result = notification_read_common(request.user.id, notification_id)
+    result = notification_read_common(request.user, notification_id)
 
     if(result):
         return HttpResponse("OK")
@@ -318,7 +314,7 @@ def notification_read(request):
 def friend_requests(request):
 
     if request.GET and request.GET['notif_id']:
-        notification_read_common(request.user.id, request.GET['notif_id'])
+        notification_read_common(request.user, request.GET['notif_id'])
 
     # Deal with friend request "Confirm", "Delete", "Cancel friend request" button press
     if request.method == 'POST':
@@ -327,18 +323,18 @@ def friend_requests(request):
         friend_request = FriendRequest.objects.get(pk=request_json['friend_request'])
 
         # Receiving player confirms or deletes friend request
-        if request.user.id == friend_request.request_to.user.id:
+        if request.user == friend_request.request_to.user:
             if(request_json['state'] == "accepted"):
                 request_datetime = datetime.now()
 
                 # Add to player's friends list and send notification to new friend
                 player = Player.objects.get(user_id=request.user.id)
-                player.friends.add(friend_request.request_from.user.id)
+                player.friends.add(friend_request.request_from)
 
                 notification = Notification(notification_type="ADDED_AS_FRIEND",
                                             text=player.user.username + " accepted your friend request.",
                                             creation_datetime=request_datetime,
-                                            player_id=friend_request.request_from.user.id)
+                                            user=friend_request.request_from.user)
                 notification.save()
 
                 # Update friend_request state and save datetime of action_taken
@@ -349,7 +345,7 @@ def friend_requests(request):
                 # Remove notification from requested player if it still is unread
                 notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
                                                             creation_datetime=friend_request.request_datetime,
-                                                            player_id=friend_request.request_to,
+                                                            user=friend_request.request_to.user,
                                                             read=False)
                 if notification:
                     notification.delete()
@@ -365,7 +361,7 @@ def friend_requests(request):
                 # Remove notification from requested player if it still is unread
                 notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
                                                             creation_datetime=friend_request.request_datetime,
-                                                            player_id=friend_request.request_to,
+                                                            user=friend_request.request_to.user,
                                                             read=False)
                 if notification:
                     notification.delete()
@@ -373,7 +369,7 @@ def friend_requests(request):
                 return HttpResponse("OK")
         
         # Sender cancels friend request
-        elif request.user.id == friend_request.request_from.user.id:
+        elif request.user == friend_request.request_from.user:
             # Update friend_request state and save datetime of action_taken
             if(request_json['state'] == 'cancel'):
                 friend_request.state = 'CANCELED'
@@ -383,7 +379,7 @@ def friend_requests(request):
                 # Remove notification from requested player
                 notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
                                                             creation_datetime=friend_request.request_datetime,
-                                                            player_id=friend_request.request_to,
+                                                            user=friend_request.request_to.user,
                                                             read=False)
                 if notification:
                     notification.delete()

@@ -23,7 +23,7 @@ class Player(models.Model):
 class Game(models.Model):
     game_id = models.CharField(primary_key=True, max_length=12, editable=False)
     name = models.CharField(max_length=30)
-    admin = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='game_admin')
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_admin')
     when = models.DateTimeField()
     where = models.CharField(max_length=60)
     players = models.ManyToManyField(Player, blank=True)
@@ -33,6 +33,9 @@ class Game(models.Model):
 
     def __str__(self):
         return str(self.when) + " - " + self.name
+
+    def get_absolute_url(self):
+        return "/games/%s/" % self.game_id
 
     def is_in_the_future(self):
         return self.when.replace(tzinfo=None) > datetime.now()
@@ -45,7 +48,7 @@ class Notification(models.Model):
     read = models.BooleanField(default=False)
     target_url = models.CharField(max_length=100, null=True, blank=True)
     url_arg = models.CharField(max_length=20, null=True, blank=True)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.text
