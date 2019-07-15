@@ -19,7 +19,7 @@ def index(request):
     params = {'user': request.user}
 
     if request.user.is_authenticated:
-        notifications = Notification.objects.filter(user=request.user.id, read=False)
+        notifications = Notification.objects.filter(user=request.user, read=False)
         params['notifications'] = notifications
 
     return render(request, 'game_planner/index.html', params)
@@ -129,7 +129,7 @@ class GamesListView(generic.ListView):
 
         user = self.request.user
         # Get player's games list
-        player = Player.objects.get(user_id=user)
+        player = Player.objects.get(user=user)
 
         games_dictionary = {}
 
@@ -149,14 +149,14 @@ class PlayersListView(generic.ListView):
 
         # Excludes logged in user from player list
         user = self.request.user
-        players = qs.exclude(user_id=user.id)
+        players = qs.exclude(user=user)
         
         return players
 
 @login_required
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
-    player = Player.objects.get(user_id=request.user.id)
+    player = Player.objects.get(user=request.user)
     is_admin = (request.user == game.admin)
     authorized = (player in game.players.all()) or is_admin or not game.private
 
@@ -173,14 +173,14 @@ class ProfileView(generic.DetailView):
         context = super().get_context_data(**kwargs)
 
         # Get Player object
-        player = Player.objects.get(user_id=self.object.id)
+        player = Player.objects.get(user=self.object)
 
         if self.request.user.is_authenticated:
             # Add authenticated user to context if user is currently logged in
             context['request_user'] = self.request.user
 
             # Add players friends list to context if user is currently logged in
-            request_player = Player.objects.get(user_id=self.request.user.id)
+            request_player = Player.objects.get(user=self.request.user)
 
             # Add are_friends flag to context
             context['are_friends'] = player in list(request_player.friends.all())
@@ -217,7 +217,7 @@ class ProfileView(generic.DetailView):
 @login_required
 def add_friend(request, pk):
     # Check if there's already a request
-    requester_player = Player.objects.get(user_id=request.user.id)
+    requester_player = Player.objects.get(user=request.user)
     requested_player = Player.objects.get(user_id=pk)
 
     active_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
@@ -244,7 +244,7 @@ def add_friend(request, pk):
 @login_required
 def request_participation(request, pk):
     # Check if there's already a request
-    player = Player.objects.get(user_id=request.user.id)
+    player = Player.objects.get(user=request.user)
     game = Game.objects.get(game_id=pk)
 
     active_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
@@ -271,7 +271,7 @@ def request_participation(request, pk):
 
 @login_required
 def remove_friend(request, pk):
-    player = Player.objects.get(user_id=request.user.id)
+    player = Player.objects.get(user=request.user)
     player_to_remove = Player.objects.get(user_id=pk)
     player.friends.remove(player_to_remove)
 
@@ -328,7 +328,7 @@ def friend_requests(request):
                 request_datetime = datetime.now()
 
                 # Add to player's friends list and send notification to new friend
-                player = Player.objects.get(user_id=request.user.id)
+                player = Player.objects.get(user=request.user)
                 player.friends.add(friend_request.request_from)
 
                 notification = Notification(notification_type="ADDED_AS_FRIEND",
@@ -391,7 +391,7 @@ def friend_requests(request):
     
     # Display Friend Requests page
     else:
-        request_player = Player.objects.get(user_id=request.user.id)
+        request_player = Player.objects.get(user=request.user)
 
         # friend requests list only shows requests that are still pending received by authenticated user
         friend_requests = FriendRequest.objects.filter(request_to=request_player, state__isnull=True)
