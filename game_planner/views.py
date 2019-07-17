@@ -236,7 +236,7 @@ def add_friend(request, pk):
         notification = Notification(notification_type="SENT_FRIEND_REQUEST",
                                     text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
-                                    target_url='game_planner:friend_requests',
+                                    target_url='friend_requests',
                                     user=requested_player.user)
         notification.save()
         return redirect('game_planner:profile', pk=pk)
@@ -263,7 +263,7 @@ def request_participation(request, pk):
         notification = Notification(notification_type="PARTICIPATION_REQ",
                                     text=player.user.username + " wants to join " + game.name + ".",
                                     creation_datetime=request_datetime,
-                                    target_url='game_planner:manage_game',
+                                    target_url='manage_game',
                                     url_arg=pk,
                                     user=game.admin)
         notification.save()

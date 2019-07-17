@@ -63,7 +63,7 @@
 
     <ul>
         {% for player in friends_list %}
-            <li><a href="{% url 'game_planner:profile' player.user.id %}">{{ player }}</a></li>
+            <li><a href="{{ player.get_absolute_url }}">{{ player }}</a></li>
         {% endfor %}
     </ul>
 
@@ -75,7 +75,7 @@
 
     <ul>
         {% for game in upcoming_games %}
-            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game }}</a></li>
+            <li><a href="{{ game.get_absolute_url }}">{{ game }}</a></li>
         {% endfor %}
     </ul>
 
@@ -87,7 +87,7 @@
 
     <ul>
         {% for game in past_games %}
-            <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game }}</a></li>
+            <li><a href="{{ game.get_absolute_url }}">{{ game }}</a></li>
         {% endfor %}
     </ul>
 

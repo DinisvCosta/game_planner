@@ -22,9 +22,9 @@
             <li>
                 <p>{{ notification }}</p>
                 {% if notification.target_url and notification.url_arg %}
-                    <a href="{% url notification.target_url notification.url_arg %}?notif_id={{ notification.pk }}">Go to</a>
+                    <a href="{{ notification.get_absolute_url }}">Go to</a>
                 {% elif notification.target_url %}
-                    <a href="{% url notification.target_url %}?notif_id={{ notification.pk }}">Go to</a>
+                    <a href="{{ notification.get_absolute_url }}">Go to</a>
                 {% endif %}
                 <button onclick="mark_as_read('{{ notification.pk }}', this)">Mark as read</button>
             </li>

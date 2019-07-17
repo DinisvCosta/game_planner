@@ -20,6 +20,9 @@ class Player(models.Model):
         string = self.user.username
         return string
 
+    def get_absolute_url(self):
+        return "/profile/%i" % self.user.id
+
 class Game(models.Model):
     game_id = models.CharField(primary_key=True, max_length=12, editable=False)
     name = models.CharField(max_length=30)
@@ -52,6 +55,12 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.text
+
+    def get_absolute_url(self):
+        if self.target_url and self.url_arg:
+            return "/{0}/{1}/?notif_id={2}".format(self.target_url, self.url_arg, self.id)
+        elif self.target_url:
+            return "/{0}/?notif_id={1}".format(self.target_url, self.id)
 
 class FriendRequest(models.Model):
     request_from = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_from')

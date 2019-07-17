@@ -5,7 +5,7 @@
 <p>Games you are administering:</p>
 <ul>
 {% for game in games.administered %}
-    <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
+    <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
     <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
     <p></p>
 {% endfor %}
@@ -17,7 +17,7 @@
     <p>Public games:</p>
     <ul>
     {% for game in games.public %}
-        <li><a href="{% url 'game_planner:game_detail' game.game_id %}">{{ game.name }}</a></li>
+        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
     {% endfor %}
     </ul>
 {% endif %}
