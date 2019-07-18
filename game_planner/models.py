@@ -29,7 +29,7 @@ class Game(models.Model):
     admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_admin')
     when = models.DateTimeField()
     where = models.CharField(max_length=60)
-    players = models.ManyToManyField(Player, blank=True)
+    players = models.ManyToManyField(Player)
     price = models.IntegerField()
     duration = models.DurationField()
     private = models.BooleanField(default=False)

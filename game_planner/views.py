@@ -102,6 +102,8 @@ def manage_game(request, pk):
     game = get_object_or_404(Game, pk=pk)
     is_admin = (request.user == game.admin)
 
+    participation_requests = GameParticipationRequest.objects.filter(request_to_game=game, state__isnull=True)
+    
     if is_admin:
 
         if request.method == 'POST':
@@ -111,7 +113,7 @@ def manage_game(request, pk):
         else:
             form = ManageGameForm()
         
-        return render(request, 'game_planner/manage_game.html', {'form': form})
+        return render(request, 'game_planner/manage_game.html', {'form': form, 'participation_requests': participation_requests})
 
     else:
         return HttpResponseForbidden()
@@ -153,16 +155,26 @@ class PlayersListView(generic.ListView):
         
         return players
 
-@login_required
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
-    player = Player.objects.get(user=request.user)
-    is_admin = (request.user == game.admin)
-    authorized = (player in game.players.all()) or is_admin or not game.private
 
-    participating = player in game.players.all()
+    if request.user and request.user.is_authenticated:
+        player = Player.objects.get(user=request.user)
+        is_admin = (request.user == game.admin)
+        authorized = (player in game.players.all()) or is_admin or not game.private
 
-    return render(request, 'game_planner/game_detail.html', {'game': game, 'authorized': authorized, 'is_admin': is_admin, 'participating': participating})
+        participating = (player in game.players.all()) or is_admin
+
+        active_participation_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
+
+        return render(request, 'game_planner/game_detail.html', {'game': game,
+                                                                 'authorized': authorized,
+                                                                 'is_admin': is_admin,
+                                                                 'participating': participating,
+                                                                 'active_participation_request': active_participation_request})
+    
+    else:
+        return render(request, 'game_planner/game_detail.html', {'game': game})
 
 class ProfileView(generic.DetailView):
     model = User
@@ -320,7 +332,7 @@ def friend_requests(request):
     if request.method == 'POST':
         request_json = json.loads(request.body)
 
-        friend_request = FriendRequest.objects.get(pk=request_json['friend_request'])
+        friend_request = FriendRequest.objects.get(pk=request_json['request'])
 
         # Receiving player confirms or deletes friend request
         if request.user == friend_request.request_to.user:
@@ -400,3 +412,78 @@ def friend_requests(request):
         params['friend_requests'] = friend_requests
 
         return render(request, 'game_planner/friend_requests.html', params)
+
+@login_required
+def manage_participation(request):
+    # Deal with participation request "Add to Game, "Delete", "Cancel participation request" button press
+    if request.method == 'POST':
+        request_json = json.loads(request.body)
+
+        participation_request = GameParticipationRequest.objects.get(pk=request_json['request'])
+
+        # Game admin confirms or deletes game participation request
+        if request.user == participation_request.request_to_game.admin:
+            if request_json['state'] == "accepted":
+                request_datetime = datetime.now()
+
+                # Add player to game players list and send notification to player
+                participation_request.request_to_game.players.add(participation_request.request_from)
+
+                notification = Notification(notification_type="ADDED_TO_GAME",
+                                            text="You've been added to " + participation_request.request_to_game.name + ".",
+                                            creation_datetime=request_datetime,
+                                            user=participation_request.request_from.user)
+                notification.save()
+
+                # Update participation_request state and save datetime of action_taken
+                participation_request.state = "ACCEPTED"
+                participation_request.action_taken_datetime = request_datetime
+                participation_request.save()
+
+                # Remove notification from game admin if it still is unread
+                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                                                           creation_datetime=participation_request.request_datetime,
+                                                           user=participation_request.request_to_game.admin,
+                                                           read=False)
+                if notification:
+                    notification.delete()
+
+                return HttpResponse("OK")
+            
+            elif request_json['state'] == "declined":
+                # Update participation_request state and save datetime of action_taken
+                participation_request.state = "DECLINED"
+                participation_request.action_taken_datetime = datetime.now()
+                participation_request.save()
+
+                # Remove notification from game admin if it still is unread
+                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                                                           creation_datetime=participation_request.request_datetime,
+                                                           user=participation_request.request_to_game.admin,
+                                                           read=False)
+                if notification:
+                    notification.delete()
+
+                return HttpResponse("OK")
+        
+        # Requester cancels game participation request
+        elif request.user == participation_request.request_from.user:
+
+            # Update participation_request state and save datetime of action_taken
+            if request_json['state'] == "cancel":
+                participation_request.state = "CANCELED"
+                participation_request.action_taken_datetime = datetime.now()
+                participation_request.save()
+
+                # Remove notification from game admin if it still is unread
+                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                                                           creation_datetime=participation_request.request_datetime,
+                                                           user=participation_request.request_to_game.admin,
+                                                           read=False)
+                if notification:
+                    notification.delete()
+
+                return HttpResponse("OK")
+                
+        else:
+            return HttpResponseForbidden()

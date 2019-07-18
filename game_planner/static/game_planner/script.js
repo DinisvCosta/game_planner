@@ -28,7 +28,7 @@ function reply(func, state, pk, elem) {
 
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            // Remove friend_request from page
+            // Remove request from page
             elem.parentNode.parentNode.removeChild(elem.parentNode);
         }
     };
@@ -41,7 +41,7 @@ function reply(func, state, pk, elem) {
 
     message = 
     {
-        friend_request: pk,
+        request: pk,
         state: state
     }
 

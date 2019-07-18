@@ -46,8 +46,10 @@
         {% elif outgoing_request %}
 
             {% for friend_request in outgoing_request %}
-
-                <button onclick="reply('/friend_requests/', 'cancel', '{{ friend_request.pk }}', this)">Cancel friend request</button>
+            
+                <div>
+                    <button onclick="reply('/friend_requests/', 'cancel', '{{ friend_request.pk }}', this)">Cancel friend request</button>
+                </div>
 
             {% endfor %}
 

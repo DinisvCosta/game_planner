@@ -1,3 +1,9 @@
+{% load static %}
+<script>
+    var csrftoken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'game_planner/script.js' %}"></script>
+
 {% if authorized %}
 
     <p>Game Name: {{ game.name }}</p>
@@ -16,13 +22,38 @@
         </ul>
     {% endif %}
 
-    {% if not participating %}
+    {% if not participating and not active_participation_request %}
+
         <form action="{% url 'game_planner:request_participation' game.game_id %}" method="POST">
             {% csrf_token %}
             <input id="request_participation_button" type="submit" value="Request Participation" />
         </form>
+
+    {% elif active_participation_request %}
+
+        {% for participation_request in active_participation_request %}
+            
+            <div>
+                <button onclick="reply('/manage_participation/', 'cancel', '{{ participation_request.pk }}', this)">Cancel participation request</button>
+            </div>
+
+        {% endfor %}
+        
     {% endif %}
 
+{% elif not game.private %}
+
+    <p>Game Name: {{ game.name }}</p>
+    <p>Admin: {{ game.admin }}</p>
+
+    {% if game.players.all %}
+        <p>Players:</p>
+        <ul>
+            {% for player in game.players.all %}
+                <li><a href="{{ player.get_absolute_url }}">{{ player.user.username }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
 {% else %}
     <p>You're not invited to this private game.</p>
