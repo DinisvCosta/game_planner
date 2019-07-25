@@ -148,10 +148,12 @@ class PlayersListView(generic.ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        players = qs
 
         # Excludes logged in user from player list
         user = self.request.user
-        players = qs.exclude(user=user)
+        if self.request.user and self.request.user.is_authenticated:
+            players = qs.exclude(user=user)
         
         return players
 
