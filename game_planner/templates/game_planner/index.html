@@ -31,17 +31,17 @@
 
         <div class="d-flex flex-row order-2 order-sm-3">
             <ul class="navbar-nav flex-row">
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown half-top-spacer">
                     <a class="nav-link px-2">
                         <i class="fas fa-bell"></i>
                     </a>
                 </li>
 
-                <li class="nav-item dropdown default-right-spacer">
+                <li class="nav-item dropdown default-right-spacer half-top-spacer">
                     <a class="nav-link px-2" data-toggle="dropdown" role="button">
                         <i class="fas fa-user"></i>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right">
+                    <ul class="dropdown-menu dropdown-menu-right default-top-spacer">
                         <span class="dropdown-item-text">{{ user.username }}</span>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
