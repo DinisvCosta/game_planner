@@ -1,0 +1,30 @@
+.default-top-spacer{
+    margin-top:10px;
+}
+.default-bottom-spacer{
+    margin-bottom:10px;
+}
+.default-right-spacer{
+    margin-right:10px;
+}
+.default-left-spacer{
+    margin-left:10px;
+}
+.half-top-spacer{
+    margin-top:5px;
+}
+.half-bottom-spacer{
+    margin-bottom:5px;
+}
+.half-right-spacer{
+    margin-right:5px;
+}
+.half-left-spacer{
+    margin-left:5px;
+}
+.fa-bell:hover {
+    color: #F0F8FF !important;
+}
+.fa-user:hover {
+    color: #F0F8FF !important;
+}

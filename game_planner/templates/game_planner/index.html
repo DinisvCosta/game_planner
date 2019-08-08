@@ -35,34 +35,30 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             
-            <ul class="navbar-nav flex-row">
-                <!-- Notification bell -->
-                <li class="nav-item dropdown half-top-spacer">
-                    <a class="nav-link px-2">
-                        <i class="fas fa-bell"></i>
-                    </a>
-                </li>
+            <!-- Notification bell -->
+            <div class="nav-item dropdown half-top-spacer">
+                <a class="nav-link px-2">
+                    <i class="fas fa-bell" style="color:rgb(158, 206, 217);"></i>
+                </a>
+            </div>
 
-                <!-- Profile icon -->
-                <li class="nav-item dropdown default-right-spacer half-top-spacer">
-                    <a class="nav-link px-2" data-toggle="dropdown" role="button">
-                        <i class="fas fa-user"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-right default-top-spacer">
-                        <span class="dropdown-item-text">{{ user.username }}</span>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
-                        <a class="dropdown-item" href="{% url 'game_planner:manage_profile' %}">Manage Profile</a>
-                    </ul>
-                </li>
+            <!-- Profile icon -->
+            <div class="nav-item dropdown default-right-spacer half-top-spacer">
+                <a class="nav-link px-2 position-relative" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user" style="color:rgb(158, 206, 217);"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right default-top-spacer" aria-labelledby="profileDropdown">
+                    <span class="dropdown-item-text">{{ user.username }}</span>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
+                    <a class="dropdown-item" href="{% url 'game_planner:manage_profile' %}">Manage Profile</a>
+                </div>
+            </div>
 
-                <!-- Logout button -->
-                <a class="btn btn-outline-light" href="{% url 'game_planner:logout' %}">Logout</a>
-            </ul>
-
+            <!-- Logout button -->
+            <a class="btn btn-outline-light" href="{% url 'game_planner:logout' %}">Logout</a>
             
         </div>
-
         
 
         <!-- <div class="float-right">
