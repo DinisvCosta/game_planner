@@ -48,7 +48,7 @@
                     <i class="fas fa-user" style="color:rgb(158, 206, 217);"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right default-top-spacer" aria-labelledby="profileDropdown">
-                    <span class="dropdown-item-text">{{ user.username }}</span>
+                    <span class="dropdown-header">{{ user.username }}</span>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
                     <a class="dropdown-item" href="{% url 'game_planner:manage_profile' %}">Manage Profile</a>
