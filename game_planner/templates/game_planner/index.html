@@ -4,6 +4,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <script src="https://kit.fontawesome.com/51738b8e2d.js"></script>
+<script scr="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/pt.js"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'game_planner/style.css' %}">
 <script>
     var csrftoken = '{{ csrf_token }}';
@@ -37,9 +38,68 @@
             
             <!-- Notification bell -->
             <div class="nav-item dropdown half-top-spacer">
-                <a class="nav-link px-2">
+                <!-- bell icon -->
+                <a class="nav-link px-2 position-relative" onclick="get_notifications()" id="notificationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-bell" style="color:rgb(158, 206, 217);"></i>
                 </a>
+                <!-- dropdown box -->
+                <div class="dropdown-menu notify-drop dropdown-menu-right default-top-spacer" aria-labelledby="profileDropdown">
+                    <div class="notify-drop-title">
+                        <div class="row">
+                            <!-- "Notifications" title text -->
+                            <div class="col-md-6 col-sm-6 col-xs-6">Notifications</div>
+                            <!-- Mark all as read icon -->
+                            <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                <a href="" title="Mark all as read.">
+                                    <i class="far fa-check-circle"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drop-content" id="notificationsDropdownContent">
+                        <!-- Loading icon while request is made -->
+                        <div id="notificationDropdownLoadingSpinner" class="d-flex justify-content-center half-top-spacer">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Notifications list -->
+                        <!-- <ul class="list-group">
+                            <li class="list-group-item list-group-item-secondary">
+                                <a href="">tiago</a> wantdasdasd asd asd asdarerwe rwerwersfagfre wgtrhythg f dsfs to join <a href="">Public 1</a> 
+                                <div class="col text-right">
+                                    
+                                    <a href="">
+                                        <i class="fas fa-external-link-alt" title="Go to"></i>
+                                    </a>
+
+                                    <a href="" class="half-left-spacer" onclick="mark_as_read('{{ notification.pk }}', this)">
+                                        <i class="fas fa-check" title="Mark as read"></i>
+                                    </a>
+
+                                </div>
+                                <p class="time" title="Tuesday, September 3, 2019 at 3:15 PM">1w</p>
+                            </li>
+
+                            <li class="list-group-item list-group-item-secondary">
+                                <a href="">tiago</a> wants to join <a href="">Public 1</a> 
+                                <div class="col text-right">
+                                    <a href="" class="rIcon">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                </div>                                    
+                                <p class="time">Şimdi</p>
+                            </li>
+
+                            <li class="list-group-item">
+                                <p>tiago wants to join Public 1</p>
+                                <p class="time">Şimdi</p>
+                            </li>
+                        </ul> -->
+                    </div> 
+                </div>
             </div>
 
             <!-- Profile icon -->

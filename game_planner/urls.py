@@ -22,4 +22,5 @@ urlpatterns = [
     path('friend_requests/', views.friend_requests, name='friend_requests'),
     path('notification_read/', views.notification_read, name='notification_read'),
     path('manage_participation/', views.manage_participation, name='manage_participation'),
+    path('get_notifications/', views.get_notifications, name='get_notifications'),
 ]

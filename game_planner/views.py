@@ -1,8 +1,9 @@
 import json
 
 from django.conf import settings
+from django.core.serializers import serialize
 from django.shortcuts import redirect, render, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views import generic
 
 from django.contrib import messages
@@ -323,6 +324,12 @@ def notification_read(request):
         return HttpResponse("OK")
     else:
         return HttpResponseNotFound()
+
+@login_required
+def get_notifications(request):
+    user_notifications_json = serialize('json', Notification.objects.filter(user=request.user))
+
+    return HttpResponse(user_notifications_json)
 
 @login_required
 def friend_requests(request):
