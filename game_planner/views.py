@@ -304,7 +304,7 @@ def remove_friend(request, pk):
 def notification_read_common(user, notification_id):
     notification = Notification.objects.get(pk=notification_id)
 
-    if notification.user == user:
+    if notification.user == user and notification.read == False:
         notification.read = True
         notification.read_datetime = datetime.now()
         notification.save()
