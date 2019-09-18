@@ -6,6 +6,9 @@ function mark_as_read(notification_id, elem) {
         if (this.readyState == 4 && this.status == 200) {
             // Remove notification from page
             elem.parentNode.parentNode.removeChild(elem.parentNode);
+
+            // Using the element id, change item color and remove mark as read button from the notification in the dropdown
+
         }
     };
 
@@ -43,25 +46,38 @@ function make_notification_list(notification_json) {
     var notification_list = document.createElement('ul');
     notification_list.className = "list-group";
 
-    for(notif in notifications) {
-        var notif_li = document.createElement('li');
-
+    if(notifications.length === 0) {
         var text_paragraph = document.createElement('p');
-        var notif_text = document.createTextNode(notifications[notif].fields.text);
+        text_paragraph.className = "d-flex justify-content-center default-top-spacer";
+        var notif_text = document.createTextNode("You have no notifications.");
+        text_paragraph.appendChild(notif_text);
+        notification_list.appendChild(text_paragraph);
+    }
 
+    for(var i = notifications.length - 1; i >= 0; i--) {
+        var notif_li = document.createElement('li');
+        var text_paragraph = document.createElement('p');
+
+        // TODO
+        // generate notification text based on "notification_type" and "from_user" with hyperlinks if they are present
+
+        var notif_text = document.createTextNode(notifications[i].fields.text);
         text_paragraph.appendChild(notif_text);
 
         var time_paragraph = document.createElement('p');
         time_paragraph.className = "time";
 
         // TODO
-        // use moment.js to format date:
+        // logic to calculate time since the notification. ie. Yesterday, x days ago, y weeks ago
+        // use toLocaleDateString to write the title with the full date
+
         // ie. "1 week ago" text in the paragraph and "Tuesday, October 1, 2019" as paragraph title
-        var notif_time = document.createTextNode(notifications[notif].fields.creation_datetime);
+
+        var notif_time = document.createTextNode(notifications[i].fields.creation_datetime);
 
         time_paragraph.appendChild(notif_time);
 
-        if(notifications[notif].fields.read) {
+        if(notifications[i].fields.read) {
             notif_li.className = "list-group-item";
             notif_li.appendChild(text_paragraph);
             notif_li.appendChild(time_paragraph);
@@ -72,11 +88,56 @@ function make_notification_list(notification_json) {
             
             notif_li.appendChild(text_paragraph);
 
-            // TODO
-            // add "Mark as read" button
-            // if notif has target url add "Go to" button
+            // buttons div
+            var buttons_div = document.createElement('div');
+            buttons_div.className = "col text-right";
 
+            // Mark as read button
+            var mark_as_read_button = document.createElement('a');
+            mark_as_read_button.href = "";
+            mark_as_read_button.className = "default-left-spacer";
+            mark_as_read_button.id = "markAsReadButton";
+
+            // TODO
+            // mark as read changes the class of the li element to remove the secondary item and removes the buttons
+            mark_as_read_button.onclick = function() { mark_as_read(notifications[i].pk, "markAsReadButton"); }
+
+            var mark_as_read_icon = document.createElement('i');
+            mark_as_read_icon.className = "fas fa-check";
+            mark_as_read_icon.title = "Mark as read";
+
+            mark_as_read_button.appendChild(mark_as_read_icon);
+
+            // Go to button
+            if(notifications[i].fields.target_url) {
+                var go_to_button = document.createElement('a');
+
+                if(notifications[i].fields.url_arg) {
+                    go_to_button.href = "/"
+                                        + notifications[i].fields.target_url
+                                        + "/"
+                                        + notifications[i].fields.url_arg
+                                        + "/?notif_id="
+                                        + notifications[i].pk;
+                } else {
+                    go_to_button.href = "/"
+                                        + notifications[i].fields.target_url
+                                        + "/?notif_id="
+                                        + notifications[i].pk;
+                }
+
+                var go_to_icon = document.createElement('i');
+                go_to_icon.className = "fas fa-external-link-alt";
+                go_to_icon.title = "Go to";
+
+                go_to_button.appendChild(go_to_icon);
+                buttons_div.appendChild(go_to_button);
+            }
+
+            buttons_div.appendChild(mark_as_read_button);
+            notif_li.appendChild(buttons_div);
             notif_li.appendChild(time_paragraph);
+            notification_list.appendChild(notif_li);
         }
     }
 
