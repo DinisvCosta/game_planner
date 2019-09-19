@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest
+from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest, NotificationType
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm, ManageGameForm
 
 def index(request):
@@ -248,7 +248,7 @@ def add_friend(request, pk):
                                         request_datetime=request_datetime)
         friend_request.save()
     
-        notification = Notification(notification_type="SENT_FRIEND_REQUEST",
+        notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
                                     text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
                                     target_url='friend_requests',
@@ -276,7 +276,7 @@ def request_participation(request, pk):
                                                             request_datetime=request_datetime)
         participation_request.save()
     
-        notification = Notification(notification_type="PARTICIPATION_REQ",
+        notification = Notification(notification_type=NotificationType.PARTICIPATION_REQ.value,
                                     text=player.user.username + " wants to join " + game.name + ".",
                                     creation_datetime=request_datetime,
                                     target_url='manage_game',
@@ -294,7 +294,7 @@ def remove_friend(request, pk):
     player.friends.remove(player_to_remove)
 
     # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
-    notification = Notification.objects.filter(notification_type="ADDED_AS_FRIEND",
+    notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
                                                 user=player_to_remove.user,
                                                 read=False)
     
@@ -354,7 +354,7 @@ def friend_requests(request):
                 player = Player.objects.get(user=request.user)
                 player.friends.add(friend_request.request_from)
 
-                notification = Notification(notification_type="ADDED_AS_FRIEND",
+                notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
                                             text=player.user.username + " accepted your friend request.",
                                             creation_datetime=request_datetime,
                                             player_info=player.user.username + " --url-- " + player.get_absolute_url,
@@ -367,7 +367,7 @@ def friend_requests(request):
                 friend_request.save()
 
                 # Mark friend request notification as read if it still is unread
-                friend_request_notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
                                                             creation_datetime=friend_request.request_datetime,
                                                             user=friend_request.request_to.user,
                                                             read=False)
@@ -383,7 +383,7 @@ def friend_requests(request):
                 friend_request.save()
 
                 # Mark friend request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
                                                             creation_datetime=friend_request.request_datetime,
                                                             user=friend_request.request_to.user,
                                                             read=False)
@@ -401,7 +401,7 @@ def friend_requests(request):
                 friend_request.save()
                 
                 # Remove notification from requested player
-                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
                                                             creation_datetime=friend_request.request_datetime,
                                                             user=friend_request.request_to.user,
                                                             read=False)
@@ -441,7 +441,7 @@ def manage_participation(request):
                 # Add player to game players list and send notification to player
                 participation_request.request_to_game.players.add(participation_request.request_from)
 
-                notification = Notification(notification_type="ADDED_TO_GAME",
+                notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
                                             text="You've been added to " + participation_request.request_to_game.name + ".",
                                             creation_datetime=request_datetime,
                                             game_name=participation_request.request_to_game.name,
@@ -454,7 +454,7 @@ def manage_participation(request):
                 participation_request.save()
 
                 # Mark game participation request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
                                                            creation_datetime=participation_request.request_datetime,
                                                            user=participation_request.request_to_game.admin,
                                                            read=False)
@@ -470,7 +470,7 @@ def manage_participation(request):
                 participation_request.save()
 
                 # Mark game participation request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
                                                            creation_datetime=participation_request.request_datetime,
                                                            user=participation_request.request_to_game.admin,
                                                            read=False)
@@ -489,7 +489,7 @@ def manage_participation(request):
                 participation_request.save()
 
                 # Remove notification from game admin if it still is unread
-                notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
+                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
                                                            creation_datetime=participation_request.request_datetime,
                                                            user=participation_request.request_to_game.admin,
                                                            read=False)

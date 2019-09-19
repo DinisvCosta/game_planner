@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import Enum
 
 from django.db import models
 from django.utils import timezone
@@ -43,8 +44,14 @@ class Game(models.Model):
     def is_in_the_future(self):
         return self.when.replace(tzinfo=None) > datetime.now()
 
+class NotificationType(Enum):
+    FRIEND_REQ = 0
+    PARTICIPATION_REQ = 1
+    ADDED_AS_FRIEND = 2
+    ADDED_TO_GAME = 3
+
 class Notification(models.Model):
-    notification_type = models.CharField(max_length=20)
+    notification_type = models.IntegerField()
     text = models.CharField(max_length=100)
     creation_datetime = models.DateTimeField()
     read_datetime = models.DateTimeField(null=True, blank=True)
