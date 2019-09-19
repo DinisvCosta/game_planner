@@ -252,6 +252,7 @@ def add_friend(request, pk):
                                     text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
                                     target_url='friend_requests',
+                                    # user_href=requester_player.user.username + " --url-- " + requester_player.get_absolute_url,
                                     user=requested_player.user)
         notification.save()
         return redirect('game_planner:profile', pk=pk)
@@ -280,6 +281,7 @@ def request_participation(request, pk):
                                     creation_datetime=request_datetime,
                                     target_url='manage_game',
                                     url_arg=pk,
+                                    # user_href=player.user.username + " --url-- " + player.get_absolute_url,
                                     user=game.admin)
         notification.save()
         return redirect('game_planner:game_detail', pk=pk)
@@ -292,7 +294,6 @@ def remove_friend(request, pk):
 
     # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
     notification = Notification.objects.filter(notification_type="ADDED_AS_FRIEND",
-                                                text=player.user.username + " accepted your friend request.",
                                                 user=player_to_remove.user,
                                                 read=False)
     
@@ -355,6 +356,7 @@ def friend_requests(request):
                 notification = Notification(notification_type="ADDED_AS_FRIEND",
                                             text=player.user.username + " accepted your friend request.",
                                             creation_datetime=request_datetime,
+                                            # user_href=player.user.username + " --url-- " + player.get_absolute_url,
                                             user=friend_request.request_from.user)
                 notification.save()
 
@@ -363,13 +365,13 @@ def friend_requests(request):
                 friend_request.action_taken_datetime = request_datetime
                 friend_request.save()
 
-                # Remove notification from requested player if it still is unread
-                notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
+                # Mark friend request notification as read if it still is unread
+                friend_request_notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
                                                             creation_datetime=friend_request.request_datetime,
                                                             user=friend_request.request_to.user,
                                                             read=False)
-                if notification:
-                    notification.delete()
+                if friend_request_notification:
+                    notification_read_common(request.user, friend_request_notification[0].pk)
 
                 return HttpResponse("OK")
 
@@ -379,13 +381,13 @@ def friend_requests(request):
                 friend_request.action_taken_datetime = datetime.now()
                 friend_request.save()
 
-                # Remove notification from requested player if it still is unread
+                # Mark friend request notification as read if it still is unread
                 notification = Notification.objects.filter(notification_type="SENT_FRIEND_REQUEST",
                                                             creation_datetime=friend_request.request_datetime,
                                                             user=friend_request.request_to.user,
                                                             read=False)
                 if notification:
-                    notification.delete()
+                    notification_read_common(request.user, notification[0].pk)
 
                 return HttpResponse("OK")
         
@@ -449,13 +451,13 @@ def manage_participation(request):
                 participation_request.action_taken_datetime = request_datetime
                 participation_request.save()
 
-                # Remove notification from game admin if it still is unread
+                # Mark game participation request notification as read if it still is unread
                 notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
                                                            creation_datetime=participation_request.request_datetime,
                                                            user=participation_request.request_to_game.admin,
                                                            read=False)
                 if notification:
-                    notification.delete()
+                    notification_read_common(request.user, notification[0].pk)
 
                 return HttpResponse("OK")
             
@@ -465,13 +467,13 @@ def manage_participation(request):
                 participation_request.action_taken_datetime = datetime.now()
                 participation_request.save()
 
-                # Remove notification from game admin if it still is unread
+                # Mark game participation request notification as read if it still is unread
                 notification = Notification.objects.filter(notification_type="PARTICIPATION_REQ",
                                                            creation_datetime=participation_request.request_datetime,
                                                            user=participation_request.request_to_game.admin,
                                                            read=False)
                 if notification:
-                    notification.delete()
+                    notification_read_common(request.user, notification[0].pk)
 
                 return HttpResponse("OK")
         
