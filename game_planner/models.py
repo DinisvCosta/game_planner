@@ -51,6 +51,8 @@ class Notification(models.Model):
     read = models.BooleanField(default=False)
     target_url = models.CharField(max_length=100, null=True, blank=True)
     url_arg = models.CharField(max_length=20, null=True, blank=True)
+    player_info = models.CharField(max_length=180, null=True, blank=True)
+    game_name = models.CharField(max_length=30, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):

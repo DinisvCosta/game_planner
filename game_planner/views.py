@@ -252,7 +252,7 @@ def add_friend(request, pk):
                                     text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
                                     target_url='friend_requests',
-                                    # user_href=requester_player.user.username + " --url-- " + requester_player.get_absolute_url,
+                                    player_info=str(requester_player.user.username) + " --url-- " + "/profile/" + str(requester_player.user.id),
                                     user=requested_player.user)
         notification.save()
         return redirect('game_planner:profile', pk=pk)
@@ -281,7 +281,8 @@ def request_participation(request, pk):
                                     creation_datetime=request_datetime,
                                     target_url='manage_game',
                                     url_arg=pk,
-                                    # user_href=player.user.username + " --url-- " + player.get_absolute_url,
+                                    player_info=player.user.username + " --url-- " + player.get_absolute_url,
+                                    game_name=game.name,
                                     user=game.admin)
         notification.save()
         return redirect('game_planner:game_detail', pk=pk)
@@ -356,7 +357,7 @@ def friend_requests(request):
                 notification = Notification(notification_type="ADDED_AS_FRIEND",
                                             text=player.user.username + " accepted your friend request.",
                                             creation_datetime=request_datetime,
-                                            # user_href=player.user.username + " --url-- " + player.get_absolute_url,
+                                            player_info=player.user.username + " --url-- " + player.get_absolute_url,
                                             user=friend_request.request_from.user)
                 notification.save()
 
@@ -443,6 +444,7 @@ def manage_participation(request):
                 notification = Notification(notification_type="ADDED_TO_GAME",
                                             text="You've been added to " + participation_request.request_to_game.name + ".",
                                             creation_datetime=request_datetime,
+                                            game_name=participation_request.request_to_game.name,
                                             user=participation_request.request_from.user)
                 notification.save()
 
