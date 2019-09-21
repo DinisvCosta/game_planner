@@ -58,11 +58,19 @@ function make_notification_list(notification_json) {
         var notif_li = document.createElement('li');
         var text_paragraph = document.createElement('p');
 
-        // TODO
-        // generate notification text based on "notification_type" and "from_user" with hyperlinks if they are present
+        var text;
 
-        var notif_text = document.createTextNode(notifications[i].fields.text);
-        text_paragraph.appendChild(notif_text);
+        if(notifications[i].notification_type === 0) {
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> wants to be your friend.";
+        } else if (notifications[i].notification_type === 1) {
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> wants to join " + "<a href=\"" + notifications[i].game_href + "\">" + notifications[i].game_name + "</a>."
+        } else if (notifications[i].notification_type === 2) {
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> accepted your friend request.";
+        } else if (notifications[i].notification_type === 3) {
+            text = "You've been added to " + "<a href=\"" + notifications[i].game_href + "\">" + notifications[i].game_name + "</a>."
+        }
+
+        text_paragraph.innerHTML = text;
 
         var time_paragraph = document.createElement('p');
         time_paragraph.className = "time";
@@ -73,11 +81,11 @@ function make_notification_list(notification_json) {
 
         // ie. "1 week ago" text in the paragraph and "Tuesday, October 1, 2019" as paragraph title
 
-        var notif_time = document.createTextNode(notifications[i].fields.creation_datetime);
+        var notif_time = document.createTextNode(notifications[i].creation_datetime);
 
         time_paragraph.appendChild(notif_time);
 
-        if(notifications[i].fields.read) {
+        if(notifications[i].read) {
             notif_li.className = "list-group-item";
             notif_li.appendChild(text_paragraph);
             notif_li.appendChild(time_paragraph);
@@ -100,7 +108,7 @@ function make_notification_list(notification_json) {
 
             // TODO
             // mark as read changes the class of the li element to remove the secondary item and removes the buttons
-            mark_as_read_button.onclick = function() { mark_as_read(notifications[i].pk, "markAsReadButton"); }
+            mark_as_read_button.onclick = function() { mark_as_read(notifications[i].id, "markAsReadButton"); }
 
             var mark_as_read_icon = document.createElement('i');
             mark_as_read_icon.className = "fas fa-check";
@@ -109,27 +117,29 @@ function make_notification_list(notification_json) {
             mark_as_read_button.appendChild(mark_as_read_icon);
 
             // Go to button
-            if(notifications[i].fields.target_url) {
+            if(notifications[i].notification_type === 0) {
+                var go_to_button = document.createElement('a');
+                
+                go_to_button.href = "/"
+                                    + "friend_requests"
+                                    + "/?notif_id="
+                                    + notifications[i].id;
+            } else if (notifications[i].notification_type === 1) {
                 var go_to_button = document.createElement('a');
 
-                if(notifications[i].fields.url_arg) {
-                    go_to_button.href = "/"
-                                        + notifications[i].fields.target_url
-                                        + "/"
-                                        + notifications[i].fields.url_arg
-                                        + "/?notif_id="
-                                        + notifications[i].pk;
-                } else {
-                    go_to_button.href = "/"
-                                        + notifications[i].fields.target_url
-                                        + "/?notif_id="
-                                        + notifications[i].pk;
-                }
+                go_to_button.href = "/"
+                                    + "manage_game"
+                                    + "/"
+                                    + notifications[i].game
+                                    + "/?notif_id="
+                                    + notifications[i].id;
+            }
 
+            if(go_to_button) {
                 var go_to_icon = document.createElement('i');
                 go_to_icon.className = "fas fa-external-link-alt";
                 go_to_icon.title = "Go to";
-
+                    
                 go_to_button.appendChild(go_to_icon);
                 buttons_div.appendChild(go_to_button);
             }

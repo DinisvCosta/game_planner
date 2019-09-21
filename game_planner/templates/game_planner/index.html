@@ -93,33 +93,6 @@
         </div> -->
     </nav>
 
-    <!-- <a href="{% url 'game_planner:profile' user.pk %}">Profile</a><br>
-    <a href="{% url 'game_planner:manage_profile' %}">Manage Profile</a><br>
-    <a href="{% url 'game_planner:create_game' %}">Create Game</a><br>
-    <a href="{% url 'game_planner:games' %}">Games</a><br>
-    <a href="{% url 'game_planner:players' %}">Players</a><br>
-    <a href="{% url 'game_planner:friend_requests' %}">Friend Requests</a><br> -->
-
-    {% if notifications %}
-
-        <p>Notifications:</p>
-
-        <ul>
-            {% for notification in notifications %}
-            <li>
-                <p>{{ notification }}</p>
-                {% if notification.target_url and notification.url_arg %}
-                    <a href="{{ notification.get_absolute_url }}">Go to</a>
-                {% elif notification.target_url %}
-                    <a href="{{ notification.get_absolute_url }}">Go to</a>
-                {% endif %}
-                <button onclick="mark_as_read('{{ notification.pk }}', this)">Mark as read</button>
-            </li>
-            {% endfor %}
-        </ul>
-
-    {% endif %}
-
 {% else %}
     <nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-primary">
         <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>

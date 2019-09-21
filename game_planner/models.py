@@ -52,18 +52,12 @@ class NotificationType(Enum):
 
 class Notification(models.Model):
     notification_type = models.IntegerField()
-    text = models.CharField(max_length=100)
     creation_datetime = models.DateTimeField()
     read_datetime = models.DateTimeField(null=True, blank=True)
     read = models.BooleanField(default=False)
-    target_url = models.CharField(max_length=100, null=True, blank=True)
-    url_arg = models.CharField(max_length=20, null=True, blank=True)
-    player_info = models.CharField(max_length=180, null=True, blank=True)
-    game_name = models.CharField(max_length=30, null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.text
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='sender')
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
 
     def get_absolute_url(self):
         if self.target_url and self.url_arg:

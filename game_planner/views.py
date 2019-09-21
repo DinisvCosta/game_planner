@@ -2,9 +2,11 @@ import json
 
 from django.conf import settings
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views import generic
+from django.forms.models import model_to_dict
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -249,11 +251,10 @@ def add_friend(request, pk):
         friend_request.save()
     
         notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
-                                    text=requester_player.user.username + " wants to be your friend.",
                                     creation_datetime=request_datetime,
-                                    target_url='friend_requests',
-                                    player_info=str(requester_player.user.username) + " --url-- " + "/profile/" + str(requester_player.user.id),
+                                    sender=requester_player.user,
                                     user=requested_player.user)
+                
         notification.save()
         return redirect('game_planner:profile', pk=pk)
 
@@ -277,12 +278,9 @@ def request_participation(request, pk):
         participation_request.save()
     
         notification = Notification(notification_type=NotificationType.PARTICIPATION_REQ.value,
-                                    text=player.user.username + " wants to join " + game.name + ".",
                                     creation_datetime=request_datetime,
-                                    target_url='manage_game',
-                                    url_arg=pk,
-                                    player_info=player.user.username + " --url-- " + player.get_absolute_url,
-                                    game_name=game.name,
+                                    sender=request.user,
+                                    game=game,
                                     user=game.admin)
         notification.save()
         return redirect('game_planner:game_detail', pk=pk)
@@ -329,9 +327,43 @@ def notification_read(request):
 
 @login_required
 def get_notifications(request):
-    user_notifications_json = serialize('json', Notification.objects.filter(user=request.user))
+    user_notifications = Notification.objects.filter(user=request.user)
 
-    return HttpResponse(user_notifications_json)
+    notifications = []
+
+    for notif in user_notifications:
+
+        notif_dict = model_to_dict(notif)
+
+        # Add necessary arguments to each type of notification
+        if(notif_dict['notification_type'] == NotificationType.FRIEND_REQ.value):
+            sender_player = Player.objects.get(user=notif_dict['sender'])
+            notif_dict['username'] = sender_player.user.username
+            notif_dict['user_href'] = sender_player.get_absolute_url()
+
+        elif(notif_dict['notification_type'] == NotificationType.ADDED_AS_FRIEND.value):
+            sender_player = Player.objects.get(user=notif_dict['sender'])
+            notif_dict['username'] = sender_player.user.username
+            notif_dict['user_href'] = sender_player.get_absolute_url()
+
+        elif(notif_dict['notification_type'] == NotificationType.PARTICIPATION_REQ.value):
+            sender_player = Player.objects.get(user=notif_dict['sender'])
+            game = Game.objects.get(game_id=notif_dict['game'])
+            notif_dict['username'] = sender_player.user.username
+            notif_dict['user_href'] = sender_player.get_absolute_url()
+            notif_dict['game_name'] = game.name
+            notif_dict['game_href'] = game.get_absolute_url()
+            
+        elif(notif_dict['notification_type'] == NotificationType.ADDED_TO_GAME.value):
+            game = Game.objects.get(game_id=notif_dict['game'])
+            notif_dict['game_name'] = game.name
+            notif_dict['game_href'] = game.get_absolute_url()
+
+        notifications.append(notif_dict)
+
+    notifs_json = json.dumps(notifications, sort_keys=True, indent=1, cls=DjangoJSONEncoder)
+
+    return HttpResponse(notifs_json)
 
 @login_required
 def friend_requests(request):
@@ -355,9 +387,8 @@ def friend_requests(request):
                 player.friends.add(friend_request.request_from)
 
                 notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
-                                            text=player.user.username + " accepted your friend request.",
                                             creation_datetime=request_datetime,
-                                            player_info=player.user.username + " --url-- " + player.get_absolute_url,
+                                            sender=player.user,
                                             user=friend_request.request_from.user)
                 notification.save()
 
@@ -442,9 +473,8 @@ def manage_participation(request):
                 participation_request.request_to_game.players.add(participation_request.request_from)
 
                 notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
-                                            text="You've been added to " + participation_request.request_to_game.name + ".",
                                             creation_datetime=request_datetime,
-                                            game_name=participation_request.request_to_game.name,
+                                            game=participation_request.request_to_game,
                                             user=participation_request.request_from.user)
                 notification.save()
 
