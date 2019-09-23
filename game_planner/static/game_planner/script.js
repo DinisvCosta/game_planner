@@ -75,15 +75,17 @@ function make_notification_list(notification_json) {
         var time_paragraph = document.createElement('p');
         time_paragraph.className = "time";
 
-        // TODO
-        // logic to calculate time since the notification. ie. Yesterday, x days ago, y weeks ago
-        // use toLocaleDateString to write the title with the full date
+        var date = new Date(notifications[i].creation_datetime);
 
-        // ie. "1 week ago" text in the paragraph and "Tuesday, October 1, 2019" as paragraph title
+        var simple_date_string = date.toLocaleDateString("pt-PT");
 
-        var notif_time = document.createTextNode(notifications[i].creation_datetime);
+        var detailed_options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        var detailed_date_string = date.toLocaleDateString("pt-PT", detailed_options);
+
+        var notif_time = document.createTextNode(simple_date_string);
 
         time_paragraph.appendChild(notif_time);
+        time_paragraph.title = detailed_date_string;
 
         if(notifications[i].read) {
             notif_li.className = "list-group-item";
@@ -157,7 +159,6 @@ function make_notification_list(notification_json) {
         document.getElementById("notificationDropdownLoadingSpinner").outerHTML = "";
         dropdown_content.appendChild(notification_list);
     }, 1000);
-
 }
 
 function reply(func, state, pk, elem) {

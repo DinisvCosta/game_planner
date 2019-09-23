@@ -40,6 +40,9 @@ class Game(models.Model):
 
     def get_absolute_url(self):
         return "/games/%s/" % self.game_id
+    
+    def get_manage_url(self):
+        return "/manage_game/%s/" % self.game_id
 
     def is_in_the_future(self):
         return self.when.replace(tzinfo=None) > datetime.now()

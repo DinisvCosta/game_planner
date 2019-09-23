@@ -352,7 +352,7 @@ def get_notifications(request):
             notif_dict['username'] = sender_player.user.username
             notif_dict['user_href'] = sender_player.get_absolute_url()
             notif_dict['game_name'] = game.name
-            notif_dict['game_href'] = game.get_absolute_url()
+            notif_dict['game_href'] = game.get_manage_url()
             
         elif(notif_dict['notification_type'] == NotificationType.ADDED_TO_GAME.value):
             game = Game.objects.get(game_id=notif_dict['game'])
