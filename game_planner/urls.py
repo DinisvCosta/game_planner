@@ -21,6 +21,7 @@ urlpatterns = [
     path('manage_game/<str:pk>/', views.manage_game, name='manage_game'),
     path('friend_requests/', views.friend_requests, name='friend_requests'),
     path('notification_read/', views.notification_read, name='notification_read'),
+    path('mark_all_as_read/', views.mark_all_as_read, name='mark_all_as_read'),
     path('manage_participation/', views.manage_participation, name='manage_participation'),
     path('get_notifications/', views.get_notifications, name='get_notifications'),
 ]

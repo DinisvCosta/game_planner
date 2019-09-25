@@ -327,6 +327,21 @@ def notification_read(request):
         return HttpResponseNotFound()
 
 @login_required
+def mark_all_as_read(request):
+    unread_notifications = Notification.objects.filter(user=request.user,
+                                                    read=False)
+    
+    success = True
+
+    for notif in unread_notifications:
+        success = notification_read_common(request.user, notif.id)
+
+    if(success):
+        return HttpResponse("OK")
+    else:
+        return HttpResponseNotFound()
+
+@login_required
 def get_notifications(request):
     user_notifications = Notification.objects.filter(user=request.user)
 

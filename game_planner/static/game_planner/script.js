@@ -26,6 +26,25 @@ function mark_as_read(notification_id, elem) {
     xhttp.send(JSON.stringify(message));
 }
 
+function mark_all_as_read() {
+
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("all notifications marked as read!");
+        }
+    }
+
+    xhttp.open("POST", "/mark_all_as_read/", true);
+
+    //Send the proper header information along with the request
+    xhttp.setRequestHeader("Content-Type", "application/json");
+    xhttp.setRequestHeader("X-CSRFToken", csrftoken);
+
+    xhttp.send();
+}
+
 function get_notifications() {
 
     var xhttp = new XMLHttpRequest();
