@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views import generic
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -220,8 +221,8 @@ class ProfileView(generic.DetailView):
             # Add public games
             games = Game.objects.filter(players=player, private=False)
 
-        context['past_games'] = games.filter(when__lte=datetime.now())
-        context['upcoming_games'] = games.filter(when__gt=datetime.now())
+        context['past_games'] = games.filter(when__lte=timezone.now())
+        context['upcoming_games'] = games.filter(when__gt=timezone.now())
         
         # Add profile player to context
         context['player'] = player
@@ -242,7 +243,7 @@ def add_friend(request, pk):
     if active_request:
         return HttpResponseForbidden()
     else:
-        request_datetime = datetime.now()
+        request_datetime = timezone.now()
 
         # Create friend request and send notification to user
         friend_request = FriendRequest(request_from=requester_player,
@@ -269,7 +270,7 @@ def request_participation(request, pk):
     if active_request:
         return HttpResponseForbidden()
     else:
-        request_datetime = datetime.now()
+        request_datetime = timezone.now()
 
         # Create game participation request and send notification to game admin
         participation_request = GameParticipationRequest(request_from=player,
@@ -306,7 +307,7 @@ def notification_read_common(user, notification_id):
 
     if notification.user == user and notification.read == False:
         notification.read = True
-        notification.read_datetime = datetime.now()
+        notification.read_datetime = timezone.now()
         notification.save()
         
         return True
@@ -380,7 +381,7 @@ def friend_requests(request):
         # Receiving player confirms or deletes friend request
         if request.user == friend_request.request_to.user:
             if(request_json['state'] == "accepted"):
-                request_datetime = datetime.now()
+                request_datetime = timezone.now()
 
                 # Add to player's friends list and send notification to new friend
                 player = Player.objects.get(user=request.user)
@@ -410,7 +411,7 @@ def friend_requests(request):
             elif(request_json['state'] == "declined"):
                 # Update friend_request state and save datetime of action_taken
                 friend_request.state = "DECLINED"
-                friend_request.action_taken_datetime = datetime.now()
+                friend_request.action_taken_datetime = timezone.now()
                 friend_request.save()
 
                 # Mark friend request notification as read if it still is unread
@@ -428,7 +429,7 @@ def friend_requests(request):
             # Update friend_request state and save datetime of action_taken
             if(request_json['state'] == 'cancel'):
                 friend_request.state = 'CANCELED'
-                friend_request.action_taken_datetime = datetime.now()
+                friend_request.action_taken_datetime = timezone.now()
                 friend_request.save()
                 
                 # Remove notification from requested player
@@ -467,7 +468,7 @@ def manage_participation(request):
         # Game admin confirms or deletes game participation request
         if request.user == participation_request.request_to_game.admin:
             if request_json['state'] == "accepted":
-                request_datetime = datetime.now()
+                request_datetime = timezone.now()
 
                 # Add player to game players list and send notification to player
                 participation_request.request_to_game.players.add(participation_request.request_from)
@@ -496,7 +497,7 @@ def manage_participation(request):
             elif request_json['state'] == "declined":
                 # Update participation_request state and save datetime of action_taken
                 participation_request.state = "DECLINED"
-                participation_request.action_taken_datetime = datetime.now()
+                participation_request.action_taken_datetime = timezone.now()
                 participation_request.save()
 
                 # Mark game participation request notification as read if it still is unread
@@ -515,7 +516,7 @@ def manage_participation(request):
             # Update participation_request state and save datetime of action_taken
             if request_json['state'] == "cancel":
                 participation_request.state = "CANCELED"
-                participation_request.action_taken_datetime = datetime.now()
+                participation_request.action_taken_datetime = timezone.now()
                 participation_request.save()
 
                 # Remove notification from game admin if it still is unread
