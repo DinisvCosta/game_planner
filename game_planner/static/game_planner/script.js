@@ -144,6 +144,7 @@ function make_notification_list(notification_json) {
                     
                 go_to_button.appendChild(go_to_icon);
                 buttons_div.appendChild(go_to_button);
+                go_to_button = "";
             }
 
             buttons_div.appendChild(mark_as_read_button);
