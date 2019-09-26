@@ -1,12 +1,11 @@
-function mark_as_read(notification_id, elem) {
+function mark_as_read(button_id) {
+
+    var notification_id = button_id.split("-")[1];
 
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            // Remove notification from page
-            elem.parentNode.parentNode.removeChild(elem.parentNode);
-
             // Using the element id, change item color and remove mark as read button from the notification in the dropdown
 
         }
@@ -125,11 +124,12 @@ function make_notification_list(notification_json) {
             var mark_as_read_button = document.createElement('a');
             mark_as_read_button.href = "";
             mark_as_read_button.className = "default-left-spacer";
-            mark_as_read_button.id = "markAsReadButton";
+            notif_id = notifications[i].id;
+            mark_as_read_button.id = "markAsReadButton-" + notif_id;
 
-            // TODO
-            // mark as read changes the class of the li element to remove the secondary item and removes the buttons
-            mark_as_read_button.onclick = function() { mark_as_read(notifications[i].id, "markAsReadButton"); }
+            mark_as_read_button.addEventListener("click", function() {
+                mark_as_read(this.id);
+            })
 
             var mark_as_read_icon = document.createElement('i');
             mark_as_read_icon.className = "fas fa-check";
