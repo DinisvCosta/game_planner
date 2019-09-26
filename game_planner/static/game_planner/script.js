@@ -1,6 +1,4 @@
-function mark_as_read(button_id) {
-
-    var notification_id = button_id.split("-")[1];
+function mark_as_read(notification_id) {
 
     var xhttp = new XMLHttpRequest();
 
@@ -124,12 +122,16 @@ function make_notification_list(notification_json) {
             var mark_as_read_button = document.createElement('a');
             mark_as_read_button.href = "";
             mark_as_read_button.className = "default-left-spacer";
-            notif_id = notifications[i].id;
-            mark_as_read_button.id = "markAsReadButton-" + notif_id;
 
-            mark_as_read_button.addEventListener("click", function() {
-                mark_as_read(this.id);
-            })
+            function createCallback(notif_id)
+            {
+                return function()
+                {
+                    mark_as_read(notif_id);
+                }
+            }
+
+            mark_as_read_button.addEventListener("click", createCallback(notifications[i].id))
 
             var mark_as_read_icon = document.createElement('i');
             mark_as_read_icon.className = "fas fa-check";
