@@ -1,19 +1,29 @@
+{% extends "base.html" %}
+
 {% block content %}
-  <h2>Create Game</h2>
-  <form method="post">
+
+<h2>Create Game</h2>
+
+<form method="post">
+
     {% csrf_token %}
+
     {% for field in form %}
-      <p>
+    <p>
         {{ field.label_tag }}<br>
         {{ field }}
+
         {% if field.help_text %}
-          <small style="color: grey">{{ field.help_text }}</small>
+        <small style="color: grey">{{ field.help_text }}</small>
         {% endif %}
+
         {% for error in field.errors %}
-          <p style="color: red">{{ error }}</p>
+        <p style="color: red">{{ error }}</p>
         {% endfor %}
-      </p>
+    </p>
     {% endfor %}
+
     <button type="submit">Create game</button>
-  </form>
+</form>
+
 {% endblock %}

@@ -1,8 +1,6 @@
-{% load static %}
-<script>
-    var csrftoken = '{{ csrf_token }}';
-</script>
-<script src="{% static 'game_planner/script.js' %}"></script>
+{% extends "base.html" %}
+
+{% block content %}
 
 {% if authorized %}
 
@@ -58,3 +56,5 @@
 {% else %}
     <p>You're not invited to this private game.</p>
 {% endif %}
+
+{% endblock %}

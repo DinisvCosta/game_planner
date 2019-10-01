@@ -1,8 +1,6 @@
-{% load static %}
-<script>
-    var csrftoken = '{{ csrf_token }}';
-</script>
-<script src="{% static 'game_planner/script.js' %}"></script>
+{% extends "base.html" %}
+
+{% block content %}
 
 <p>Username: {{ profile_user.username }}</p>
 <p>First Name: {{ profile_user.first_name }}</p>
@@ -94,3 +92,5 @@
     </ul>
 
 {% endif %}
+
+{% endblock %}

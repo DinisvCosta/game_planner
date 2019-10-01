@@ -1,37 +1,41 @@
-{% load static %}
+{% extends "base.html" %}
+
+{% block content %}
 
 {% if games.administered %}
-
 <p>Games you are administering:</p>
+
 <ul>
-{% for game in games.administered %}
+    {% for game in games.administered %}
     <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
     <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
     <p></p>
-{% endfor %}
+    {% endfor %}
 </ul>
 {% endif %}
 
 {% if games.public %}
+<p>Public games:</p>
 
-    <p>Public games:</p>
-    <ul>
+<ul>
     {% for game in games.public %}
-        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
+    <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
     {% endfor %}
-    </ul>
+</ul>
 {% endif %}
 
 {% if games.invited %}
-
 <p>Games you are invited to:</p>
+
 <ul>
-{% for game in games.invited %}
+    {% for game in games.invited %}
     <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
-{% endfor %}
+    {% endfor %}
 </ul>
 {% endif %}
 
 {% if not games.administered and not games.public %}
-    <p>You currently don't have any games.</p>
+<p>You currently don't have any games.</p>
 {% endif %}
+
+{% endblock %}

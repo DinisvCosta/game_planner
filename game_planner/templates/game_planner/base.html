@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/51738b8e2d.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'game_planner/style.css' %}">
+    <script>
+        var csrftoken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'game_planner/script.js' %}"></script>
+
+    <title>{% block title %}Game planner: plan games with friends{% endblock %}</title>
+
+    {% if user.is_authenticated %}
+    <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-primary">
+        <!-- "Game Planner" link to index -->
+        <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>
+
+        <!-- Links to Players, Games, and Create Game button -->
+        <div class="collapse navbar-collapse order-3 order-sm-2" id="navbarNavDropdown">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'game_planner:players' %}">Players</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'game_planner:games' %}">Games</a>
+                </li>
+                <a class="btn btn-outline-light" href="{% url 'game_planner:create_game' %}">Create Game</a>
+            </ul>
+        </div>
+
+        <div class="d-flex flex-row order-2 order-sm-3">
+            <!-- Collapse button -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Notification bell -->
+            <div class="nav-item dropdown">
+                <!-- bell icon -->
+                <a class="nav-link px-2 position-relative" onclick="get_notifications()" id="notificationsDropdown"
+                    role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-bell" style="color:rgb(158, 206, 217);"></i>
+                </a>
+                <!-- dropdown box -->
+                <div class="dropdown-menu notify-drop dropdown-menu-right default-top-spacer"
+                    aria-labelledby="profileDropdown">
+                    <div class="notify-drop-title">
+                        <div class="row">
+                            <!-- "Notifications" title text -->
+                            <div class="col-md-6 col-sm-6 col-xs-6">Notifications</div>
+                            <!-- Mark all as read icon -->
+                            <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                <a href="" onclick="mark_all_as_read()" title="Mark all as read.">
+                                    <i class="far fa-check-circle"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drop-content" id="notificationsDropdownContent">
+                        <!-- Loading icon while request is made -->
+                        <div id="notificationDropdownLoadingSpinner"
+                            class="d-flex justify-content-center half-top-spacer">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile icon -->
+            <div class="nav-item dropdown default-right-spacer">
+                <a class="nav-link px-2 position-relative" id="profileDropdown" role="button" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user" style="color:rgb(158, 206, 217);"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right default-top-spacer" aria-labelledby="profileDropdown">
+                    <span class="dropdown-header">{{ user.username }}</span>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
+                    <a class="dropdown-item" href="{% url 'game_planner:manage_profile' %}">Manage Profile</a>
+                </div>
+            </div>
+
+            <!-- Logout button -->
+            <a class="btn btn-outline-light" href="{% url 'game_planner:logout' %}">Logout</a>
+
+        </div>
+    </nav>
+    {% else %}
+    <nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-primary">
+        <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>
+
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'game_planner:players' %}">Players</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'game_planner:games' %}">Games</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Signup and Login buttons -->
+        <div class="float-right">
+            <a class="btn btn-light" href="{% url 'game_planner:signup' %}">Signup</a>
+            <a class="btn btn-outline-light" href="{% url 'game_planner:login' %}">Login</a><br>
+        </div>
+    </nav>
+    {% endif %}
+</head>
+
+<body>
+    <div id="content" class="navbar-top-spacer default-left-spacer">
+        {% block content %}
+        
+        {% endblock %}
+    </div>
+</body>
+
+</html>

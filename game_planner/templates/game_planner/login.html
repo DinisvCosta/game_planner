@@ -1,43 +1,25 @@
-{% load static %}
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-<nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-primary">
-  <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>
-
-  <div class="collapse navbar-collapse">
-    <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'game_planner:players' %}">Players</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'game_planner:games' %}">Games</a>
-        </li>
-    </ul>
-  </div>
-
-  <div class="float-right">
-    <a class="btn btn-light" href="{% url 'game_planner:signup' %}">Signup</a>
-  </div>
-
-</nav>
+{% extends "base.html" %}
 
 {% block content %}
-  <h2 class="text-center">Log in</h2>
-  <form method="post">
+
+<h2>Log in</h2>
+
+<form method="post">
     {% csrf_token %}
 
     <div class="fieldWrapper">
-      {{ form.username.errors }}
-      <label for="{{ form.username.id_for_label }}">Username:</label>
-      {{ form.username }}
+        {{ form.username.errors }}
+        <label for="{{ form.username.id_for_label }}">Username:</label>
+        {{ form.username }}
     </div>
 
     <div class="fieldWrapper">
-      {{ form.password.errors }}
-      <label for="{{ form.password.id_for_label }}">Password:</label>
-      {{ form.password }}
+        {{ form.password.errors }}
+        <label for="{{ form.password.id_for_label }}">Password:</label>
+        {{ form.password }}
     </div>
 
     <button type="submit">Log in</button>
-  </form>
+</form>
+
 {% endblock %}
