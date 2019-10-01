@@ -8,7 +8,7 @@
 <ul>
     {% for game in games.administered %}
     <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
-    <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
+    <a href="{{ game.get_manage_url }}">Manage Game</a><br>
     <p></p>
     {% endfor %}
 </ul>

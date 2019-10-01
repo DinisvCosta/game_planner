@@ -8,7 +8,7 @@
     <p>Admin: {{ game.admin }}</p>
 
     {% if is_admin %}
-        <a href="{% url 'game_planner:manage_game' game.game_id %}">Manage Game</a><br>
+        <a href="{{ game.get_manage_url }}">Manage Game</a><br>
     {% endif %}
 
     {% if game.players.all %}

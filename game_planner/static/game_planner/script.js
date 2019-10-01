@@ -150,11 +150,8 @@ function make_notification_list(notification_json) {
             } else if (notifications[i].notification_type === 1) {
                 var go_to_button = document.createElement('a');
 
-                go_to_button.href = "/"
-                                    + "manage_game"
-                                    + "/"
-                                    + notifications[i].game
-                                    + "/?notif_id="
+                go_to_button.href = notifications[i].game_href
+                                    + "?notif_id="
                                     + notifications[i].id;
             }
 
