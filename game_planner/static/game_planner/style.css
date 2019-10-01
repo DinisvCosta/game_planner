@@ -31,7 +31,9 @@
 .fa-user:hover {
     color: #F0F8FF !important;
 }
-
+.fa-user-friends:hover {
+    color: #F0F8FF !important;
+}
 .dropdown-menu.notify-drop {
     min-width: 330px;
     background-color: #fff;
