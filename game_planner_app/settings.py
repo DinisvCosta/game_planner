@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from configparser import RawConfigParser
+
+config = RawConfigParser()
+config.read('/home/dinis/Desktop/programming/game_planner_app/game_planner_app/settings.ini')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '4&op++)!s$1#^okxqlw4in+%zouw178a@)ce5pqmeo!+cq=3jb'
+SECRET_KEY = config.get('SECRET_KEY', 'secret_key_a')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -55,7 +59,9 @@ ROOT_URLCONF = 'game_planner_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            config.get('TEMPLATE_DIRS', 'dir_1'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,9 +83,9 @@ WSGI_APPLICATION = 'game_planner_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'game_planner_app_db',
-        'USER': 'administrator',
-        'PASSWORD': 'pk8s1',
+        'NAME': config.get('DATABASE', 'name'),
+        'USER': config.get('DATABASE', 'user'),
+        'PASSWORD': config.get('DATABASE', 'password'),
         'HOST': '',
         'PORT': '',
     }
