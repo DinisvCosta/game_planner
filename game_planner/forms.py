@@ -41,18 +41,21 @@ class SignUpForm(forms.Form):
         return True
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label='Username or Email', max_length=50)
+    username = forms.CharField(label='Username or Email', max_length=254)
     password = forms.CharField(label='Password', min_length=6, max_length=30, widget=forms.PasswordInput())
 
     def clean(self):
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
 
-        if not User.objects.filter(username=username).exists():
+        if not (User.objects.filter(username=username).exists() or User.objects.filter(email=username)):
             self.add_error('username', "Invalid username or email.")
-        # TODO
-        # Deal with username field being the email,
-        # get username for the user with that email
+        
+        if User.objects.filter(email=username).exists():
+            user = User.objects.get(email=username)
+            username = user.username
+            self.cleaned_data['username'] = username
+
         if authenticate(username=username, password=password) == None:
             self.add_error('password', "Invalid password.")            
 

@@ -9,16 +9,16 @@
 
     <div class="fieldWrapper">
         {{ form.username.errors }}
-        <label for="{{ form.username.id_for_label }}">Username:</label>
+        <label for="{{ form.username.id_for_label }}">Username or email address:</label><br>
         {{ form.username }}
     </div>
 
     <div class="fieldWrapper">
         {{ form.password.errors }}
-        <label for="{{ form.password.id_for_label }}">Password:</label>
+        <label for="{{ form.password.id_for_label }}">Password:</label><br>
         {{ form.password }}
     </div>
-
+    <br>
     <button type="submit">Log in</button>
 </form>
 
