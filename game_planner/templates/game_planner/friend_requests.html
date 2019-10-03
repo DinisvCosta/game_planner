@@ -8,8 +8,8 @@
     {% for friend_request in friend_requests %}
     <li>
         <a href="{% url 'game_planner:profile' friend_request.request_from.user.id %}">{{ friend_request.request_from }}</a>
-        <button onclick="reply('/friend_requests/', 'accepted', '{{ friend_request.pk }}', this)">Confirm</button>
-        <button onclick="reply('/friend_requests/', 'declined', '{{ friend_request.pk }}', this)">Delete</button>
+        <button onclick="send_request('/friend_requests/', {'state': 'accepted', 'pk': '{{ friend_request.pk }}'}, this)">Confirm</button>
+        <button onclick="send_request('/friend_requests/', {'state': 'declined', 'pk': '{{ friend_request.pk }}'}, this)">Delete</button>
     </li>
     {% endfor %}
 </ul>

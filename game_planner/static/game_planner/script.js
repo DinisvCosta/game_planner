@@ -180,27 +180,24 @@ function make_notification_list(notification_json) {
     }, 1000);
 }
 
-function reply(func, state, pk, elem) {
+function send_request(url, args, elem) {
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             // Remove request from page
-            elem.parentNode.parentNode.removeChild(elem.parentNode);
+            //elem.parentNode.parentNode.removeChild(elem.parentNode);
+            location.reload();
         }
     };
 
-    xhttp.open("POST", func, true);
+    xhttp.open("POST", url, true);
 
     //Send the proper header information along with the request
     xhttp.setRequestHeader("Content-Type", "application/json");
     xhttp.setRequestHeader("X-CSRFToken", csrftoken);
 
-    message = 
-    {
-        request: pk,
-        state: state
-    }
+    message = args;
 
     xhttp.send(JSON.stringify(message));
 }

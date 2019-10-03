@@ -15,19 +15,13 @@
 
     {% if are_friends %}
 
-        <form action="{% url 'game_planner:remove_friend' profile_user.id %}" method="POST">
-            {% csrf_token %}
-            <input id="remove_friend_button" type="submit" value="Remove Friend" />
-        </form>
+        <button onclick="send_request('/friend_requests/', {'action': 'remove_friend', 'pk': '{{ profile_user.id }}'}, this)">Remove Friend</button>
 
     {% else %}
 
         {% if not incoming_request and not outgoing_request %}
-
-            <form action="{% url 'game_planner:add_friend' profile_user.id %}" method="POST">
-                {% csrf_token %}
-                <input id="add_friend_button" type="submit" value="Add Friend" />
-            </form>
+        
+            <button onclick="send_request('/friend_requests/', {'action': 'add_friend', 'pk': '{{ profile_user.id }}'}, this)">Add Friend</button>
 
         {% elif incoming_request %}
 
@@ -35,8 +29,8 @@
 
                 <div>
                     <p>{{ profile_user.username }} has sent you a friend request.</p>
-                    <button onclick="reply('/friend_requests/', 'accepted', '{{ friend_request.pk }}', this)">Confirm</button>
-                    <button onclick="reply('/friend_requests/', 'declined', '{{ friend_request.pk }}', this)">Delete</button>
+                    <button onclick="send_request('/friend_requests/', {'state': 'accepted', 'pk': '{{ friend_request.pk }}'}, this)">Confirm</button>
+                    <button onclick="send_request('/friend_requests/', {'state': 'declined', 'pk': '{{ friend_request.pk }}'}, this)">Delete</button>
                 </div>
 
             {% endfor %}
@@ -46,7 +40,7 @@
             {% for friend_request in outgoing_request %}
             
                 <div>
-                    <button onclick="reply('/friend_requests/', 'cancel', '{{ friend_request.pk }}', this)">Cancel friend request</button>
+                    <button onclick="send_request('/friend_requests/', {'state': 'cancel', 'pk': '{{ friend_request.pk }}'}, this)">Cancel friend request</button>
                 </div>
 
             {% endfor %}

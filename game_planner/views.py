@@ -232,76 +232,6 @@ class ProfileView(generic.DetailView):
         
         return context
 
-@login_required
-def add_friend(request, pk):
-    # Check if there's already a request
-    requester_player = Player.objects.get(user=request.user)
-    requested_player = Player.objects.get(user_id=pk)
-
-    active_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
-    
-    if active_request:
-        return HttpResponseForbidden()
-    else:
-        request_datetime = timezone.now()
-
-        # Create friend request and send notification to user
-        friend_request = FriendRequest(request_from=requester_player,
-                                        request_to=requested_player,
-                                        request_datetime=request_datetime)
-        friend_request.save()
-    
-        notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
-                                    creation_datetime=request_datetime,
-                                    sender=requester_player.user,
-                                    user=requested_player.user)
-                
-        notification.save()
-        return redirect('game_planner:profile', pk=pk)
-
-@login_required
-def request_participation(request, pk):
-    # Check if there's already a request
-    player = Player.objects.get(user=request.user)
-    game = Game.objects.get(game_id=pk)
-
-    active_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
-    
-    if active_request:
-        return HttpResponseForbidden()
-    else:
-        request_datetime = timezone.now()
-
-        # Create game participation request and send notification to game admin
-        participation_request = GameParticipationRequest(request_from=player,
-                                                            request_to_game=game,
-                                                            request_datetime=request_datetime)
-        participation_request.save()
-    
-        notification = Notification(notification_type=NotificationType.PARTICIPATION_REQ.value,
-                                    creation_datetime=request_datetime,
-                                    sender=request.user,
-                                    game=game,
-                                    user=game.admin)
-        notification.save()
-        return redirect('game_planner:game_detail', pk=pk)
-
-@login_required
-def remove_friend(request, pk):
-    player = Player.objects.get(user=request.user)
-    player_to_remove = Player.objects.get(user_id=pk)
-    player.friends.remove(player_to_remove)
-
-    # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
-    notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
-                                                user=player_to_remove.user,
-                                                read=False)
-    
-    if notification:
-        notification.delete()
-
-    return redirect('game_planner:profile', pk=player_to_remove.user_id)
-
 def notification_read_common(user, notification_id):
     notification = Notification.objects.get(pk=notification_id)
 
@@ -387,79 +317,123 @@ def friend_requests(request):
     if request.GET and request.GET['notif_id']:
         notification_read_common(request.user, request.GET['notif_id'])
 
-    # Deal with friend request "Confirm", "Delete", "Cancel friend request" button press
+    # Deal with friend request "Add Friend", "Remove Friend", "Confirm", "Delete", "Cancel friend request" button press
     if request.method == 'POST':
         request_json = json.loads(request.body)
-
-        friend_request = FriendRequest.objects.get(pk=request_json['request'])
-
-        # Receiving player confirms or deletes friend request
-        if request.user == friend_request.request_to.user:
-            if(request_json['state'] == "accepted"):
-                request_datetime = timezone.now()
-
-                # Add to player's friends list and send notification to new friend
-                player = Player.objects.get(user=request.user)
-                player.friends.add(friend_request.request_from)
-
-                notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
-                                            creation_datetime=request_datetime,
-                                            sender=player.user,
-                                            user=friend_request.request_from.user)
-                notification.save()
-
-                # Update friend_request state and save datetime of action_taken
-                friend_request.state = "ACCEPTED"
-                friend_request.action_taken_datetime = request_datetime
-                friend_request.save()
-
-                # Mark friend request notification as read if it still is unread
-                friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                            creation_datetime=friend_request.request_datetime,
-                                                            user=friend_request.request_to.user,
-                                                            read=False)
-                if friend_request_notification:
-                    notification_read_common(request.user, friend_request_notification[0].pk)
-
-                return HttpResponse("OK")
-
-            elif(request_json['state'] == "declined"):
-                # Update friend_request state and save datetime of action_taken
-                friend_request.state = "DECLINED"
-                friend_request.action_taken_datetime = timezone.now()
-                friend_request.save()
-
-                # Mark friend request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                            creation_datetime=friend_request.request_datetime,
-                                                            user=friend_request.request_to.user,
-                                                            read=False)
-                if notification:
-                    notification_read_common(request.user, notification[0].pk)
-
-                return HttpResponse("OK")
         
-        # Sender cancels friend request
-        elif request.user == friend_request.request_from.user:
-            # Update friend_request state and save datetime of action_taken
-            if(request_json['state'] == 'cancel'):
-                friend_request.state = 'CANCELED'
-                friend_request.action_taken_datetime = timezone.now()
-                friend_request.save()
+        if 'state' in request_json:
+            friend_request = FriendRequest.objects.get(pk=request_json['pk'])
+
+            # Receiving player confirms or deletes friend request
+            if request.user == friend_request.request_to.user:
+                if request_json['state'] == "accepted":
+                    request_datetime = timezone.now()
+
+                    # Add to player's friends list and send notification to new friend
+                    player = Player.objects.get(user=request.user)
+                    player.friends.add(friend_request.request_from)
+
+                    notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
+                                                creation_datetime=request_datetime,
+                                                sender=player.user,
+                                                user=friend_request.request_from.user)
+                    notification.save()
+
+                    # Update friend_request state and save datetime of action_taken
+                    friend_request.state = "ACCEPTED"
+                    friend_request.action_taken_datetime = request_datetime
+                    friend_request.save()
+
+                    # Mark friend request notification as read if it still is unread
+                    friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                                creation_datetime=friend_request.request_datetime,
+                                                                user=friend_request.request_to.user,
+                                                                read=False)
+                    if friend_request_notification:
+                        notification_read_common(request.user, friend_request_notification[0].pk)
+
+                    return HttpResponse("OK")
+
+                elif request_json['state'] == "declined":
+                    # Update friend_request state and save datetime of action_taken
+                    friend_request.state = "DECLINED"
+                    friend_request.action_taken_datetime = timezone.now()
+                    friend_request.save()
+
+                    # Mark friend request notification as read if it still is unread
+                    notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                                creation_datetime=friend_request.request_datetime,
+                                                                user=friend_request.request_to.user,
+                                                                read=False)
+                    if notification:
+                        notification_read_common(request.user, notification[0].pk)
+
+                    return HttpResponse("OK")
+            
+            # Sender cancels friend request
+            elif request.user == friend_request.request_from.user:
+                # Update friend_request state and save datetime of action_taken
+                if request_json['state'] == 'cancel':
+                    friend_request.state = 'CANCELED'
+                    friend_request.action_taken_datetime = timezone.now()
+                    friend_request.save()
+                    
+                    # Remove notification from requested player
+                    notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                                creation_datetime=friend_request.request_datetime,
+                                                                user=friend_request.request_to.user,
+                                                                read=False)
+                    if notification:
+                        notification.delete()
+                    
+                    return HttpResponse("OK")
+                    
+            else:
+                return HttpResponseForbidden()
+        
+        elif 'action' in request_json:
+            # request.user adds friend or removes friend
+            if request_json['action'] == 'add_friend':
+                # Check if there's already a request
+                requester_player = Player.objects.get(user=request.user)
+                requested_player = Player.objects.get(user_id=request_json['pk'])
+
+                active_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
                 
-                # Remove notification from requested player
-                notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                            creation_datetime=friend_request.request_datetime,
-                                                            user=friend_request.request_to.user,
+                if active_request:
+                    return HttpResponseForbidden()
+                else:
+                    request_datetime = timezone.now()
+
+                    # Create friend request and send notification to user
+                    friend_request = FriendRequest(request_from=requester_player,
+                                                    request_to=requested_player,
+                                                    request_datetime=request_datetime)
+                    friend_request.save()
+                
+                    notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
+                                                creation_datetime=request_datetime,
+                                                sender=requester_player.user,
+                                                user=requested_player.user)
+                            
+                    notification.save()
+                    return redirect('game_planner:profile', pk=request_json['pk'])
+            
+            elif request_json['action'] == 'remove_friend':
+                player = Player.objects.get(user=request.user)
+                player_to_remove = Player.objects.get(user_id=request_json['pk'])
+                player.friends.remove(player_to_remove)
+
+                # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
+                notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
+                                                            user=player_to_remove.user,
                                                             read=False)
+                
                 if notification:
                     notification.delete()
-                
-                return HttpResponse("OK")
-                
-        else:
-            return HttpResponseForbidden()
-    
+
+                return redirect('game_planner:profile', pk=player_to_remove.user_id)
+            
     # Display Friend Requests page
     else:
         request_player = Player.objects.get(user=request.user)
@@ -478,71 +452,99 @@ def manage_participation(request):
     if request.method == 'POST':
         request_json = json.loads(request.body)
 
-        participation_request = GameParticipationRequest.objects.get(pk=request_json['request'])
+        if 'state' in request_json:
+            participation_request = GameParticipationRequest.objects.get(pk=request_json['pk'])
 
-        # Game admin confirms or deletes game participation request
-        if request.user == participation_request.request_to_game.admin:
-            if request_json['state'] == "accepted":
-                request_datetime = timezone.now()
+            # Game admin confirms or deletes game participation request
+            if request.user == participation_request.request_to_game.admin:
+                if request_json['state'] == "accepted":
+                    request_datetime = timezone.now()
 
-                # Add player to game players list and send notification to player
-                participation_request.request_to_game.players.add(participation_request.request_from)
+                    # Add player to game players list and send notification to player
+                    participation_request.request_to_game.players.add(participation_request.request_from)
 
-                notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
-                                            creation_datetime=request_datetime,
-                                            game=participation_request.request_to_game,
-                                            user=participation_request.request_from.user)
-                notification.save()
+                    notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
+                                                creation_datetime=request_datetime,
+                                                game=participation_request.request_to_game,
+                                                user=participation_request.request_from.user)
+                    notification.save()
 
-                # Update participation_request state and save datetime of action_taken
-                participation_request.state = "ACCEPTED"
-                participation_request.action_taken_datetime = request_datetime
-                participation_request.save()
+                    # Update participation_request state and save datetime of action_taken
+                    participation_request.state = "ACCEPTED"
+                    participation_request.action_taken_datetime = request_datetime
+                    participation_request.save()
 
-                # Mark game participation request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
-                                                           creation_datetime=participation_request.request_datetime,
-                                                           user=participation_request.request_to_game.admin,
-                                                           read=False)
-                if notification:
-                    notification_read_common(request.user, notification[0].pk)
+                    # Mark game participation request notification as read if it still is unread
+                    notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                            creation_datetime=participation_request.request_datetime,
+                                                            user=participation_request.request_to_game.admin,
+                                                            read=False)
+                    if notification:
+                        notification_read_common(request.user, notification[0].pk)
 
-                return HttpResponse("OK")
-            
-            elif request_json['state'] == "declined":
-                # Update participation_request state and save datetime of action_taken
-                participation_request.state = "DECLINED"
-                participation_request.action_taken_datetime = timezone.now()
-                participation_request.save()
-
-                # Mark game participation request notification as read if it still is unread
-                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
-                                                           creation_datetime=participation_request.request_datetime,
-                                                           user=participation_request.request_to_game.admin,
-                                                           read=False)
-                if notification:
-                    notification_read_common(request.user, notification[0].pk)
-
-                return HttpResponse("OK")
-        
-        # Requester cancels game participation request
-        elif request.user == participation_request.request_from.user:
-
-            # Update participation_request state and save datetime of action_taken
-            if request_json['state'] == "cancel":
-                participation_request.state = "CANCELED"
-                participation_request.action_taken_datetime = timezone.now()
-                participation_request.save()
-
-                # Remove notification from game admin if it still is unread
-                notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
-                                                           creation_datetime=participation_request.request_datetime,
-                                                           user=participation_request.request_to_game.admin,
-                                                           read=False)
-                if notification:
-                    notification.delete()
-
-                return HttpResponse("OK")
+                    return HttpResponse("OK")
                 
-        else:
-            return HttpResponseForbidden()
+                elif request_json['state'] == "declined":
+                    # Update participation_request state and save datetime of action_taken
+                    participation_request.state = "DECLINED"
+                    participation_request.action_taken_datetime = timezone.now()
+                    participation_request.save()
+
+                    # Mark game participation request notification as read if it still is unread
+                    notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                            creation_datetime=participation_request.request_datetime,
+                                                            user=participation_request.request_to_game.admin,
+                                                            read=False)
+                    if notification:
+                        notification_read_common(request.user, notification[0].pk)
+
+                    return HttpResponse("OK")
+            
+            # Requester cancels game participation request
+            elif request.user == participation_request.request_from.user:
+
+                # Update participation_request state and save datetime of action_taken
+                if request_json['state'] == "cancel":
+                    participation_request.state = "CANCELED"
+                    participation_request.action_taken_datetime = timezone.now()
+                    participation_request.save()
+
+                    # Remove notification from game admin if it still is unread
+                    notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                            creation_datetime=participation_request.request_datetime,
+                                                            user=participation_request.request_to_game.admin,
+                                                            read=False)
+                    if notification:
+                        notification.delete()
+
+                    return HttpResponse("OK")
+                    
+            else:
+                return HttpResponseForbidden()
+        
+        elif 'action' in request_json:
+            if request_json['action'] == 'request_participation':
+                # Check if there's already a request
+                player = Player.objects.get(user=request.user)
+                game = Game.objects.get(game_id=request_json['pk'])
+
+                active_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
+                
+                if active_request:
+                    return HttpResponseForbidden()
+                else:
+                    request_datetime = timezone.now()
+
+                    # Create game participation request and send notification to game admin
+                    participation_request = GameParticipationRequest(request_from=player,
+                                                                        request_to_game=game,
+                                                                        request_datetime=request_datetime)
+                    participation_request.save()
+                
+                    notification = Notification(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                creation_datetime=request_datetime,
+                                                sender=request.user,
+                                                game=game,
+                                                user=game.admin)
+                    notification.save()
+                    return redirect('game_planner:game_detail', pk=request_json['pk'])

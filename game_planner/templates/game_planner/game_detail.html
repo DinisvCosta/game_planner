@@ -22,18 +22,13 @@
 
     {% if not participating and not active_participation_request %}
 
-        <form action="{% url 'game_planner:request_participation' game.game_id %}" method="POST">
-            {% csrf_token %}
-            <input id="request_participation_button" type="submit" value="Request Participation" />
-        </form>
+        <button onclick="send_request('/manage_participation/', {'action': 'request_participation', 'pk': '{{ game.game_id }}'}, this)">Request participation</button>
 
     {% elif active_participation_request %}
 
         {% for participation_request in active_participation_request %}
             
-            <div>
-                <button onclick="reply('/manage_participation/', 'cancel', '{{ participation_request.pk }}', this)">Cancel participation request</button>
-            </div>
+            <button onclick="send_request('/manage_participation/', {'state': 'cancel', 'pk': '{{ participation_request.pk }}'}, this)">Cancel participation request</button>
 
         {% endfor %}
         
