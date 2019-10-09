@@ -62,12 +62,6 @@ class Notification(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
 
-    def get_absolute_url(self):
-        if self.target_url and self.url_arg:
-            return "/{0}/{1}/?notif_id={2}".format(self.target_url, self.url_arg, self.id)
-        elif self.target_url:
-            return "/{0}/?notif_id={1}".format(self.target_url, self.id)
-
 class FriendRequest(models.Model):
     request_from = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_from')
     request_to = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_to')
