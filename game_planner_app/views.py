@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest, NotificationType
+from game_planner_api.models import Player, Game, Notification, FriendRequest, GameParticipationRequest, NotificationType
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm, ManageGameForm
 
 def index(request):

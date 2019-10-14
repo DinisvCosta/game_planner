@@ -14,7 +14,7 @@ def pkgen(stringLength=12):
 
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    friends = models.ManyToManyField("self", null=True, blank=True)
+    friends = models.ManyToManyField("self", blank=True)
     number_of_games_played = models.IntegerField(default=0)
 
     def __str__(self):

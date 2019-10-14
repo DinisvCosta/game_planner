@@ -35,7 +35,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'game_planner_app.apps.game_planner_appConfig',
+    'game_planner_app.apps.GamePlannerAppConfig',
+    'game_planner_api.apps.GamePlannerApiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
