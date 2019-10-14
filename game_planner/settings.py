@@ -14,7 +14,7 @@ import os
 from configparser import RawConfigParser
 
 config = RawConfigParser()
-config.read('/home/dinis/Desktop/programming/game_planner_app/game_planner_app/settings.ini')
+config.read('/home/dinis/Desktop/programming/game_planner/game_planner/settings.ini')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,7 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'game_planner.apps.game_plannerConfig',
+    'game_planner_app.apps.game_planner_appConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'game_planner_app.urls'
+ROOT_URLCONF = 'game_planner.urls'
 
 TEMPLATES = [
     {
@@ -74,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'game_planner_app.wsgi.application'
+WSGI_APPLICATION = 'game_planner.wsgi.application'
 
 
 # Database

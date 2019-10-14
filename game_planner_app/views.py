@@ -26,11 +26,11 @@ def index(request):
         notifications = Notification.objects.filter(user=request.user, read=False)
         params['notifications'] = notifications
 
-    return render(request, 'game_planner/index.html', params)
+    return render(request, 'game_planner_app/index.html', params)
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('game_planner:index')
+        return redirect('game_planner_app:index')
 
     next = ""
     if request.GET:
@@ -46,21 +46,21 @@ def login_view(request):
 
             # redirect to correct page if there is a next arg
             if next == "":
-                return redirect('game_planner:index')
+                return redirect('game_planner_app:index')
             else:
                 return redirect(next)
     else:
         form = LoginForm()
-    return render(request, 'game_planner/login.html', {'form': form})
+    return render(request, 'game_planner_app/login.html', {'form': form})
 
 def logout_view(request):
     # TODO if no user is currently logged in, display message saying that
     logout(request)
-    return redirect('game_planner:index')
+    return redirect('game_planner_app:index')
 
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('game_planner:index')
+        return redirect('game_planner_app:index')
         
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -70,10 +70,10 @@ def signup(request):
             password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect('game_planner:index')
+            return redirect('game_planner_app:index')
     else:
         form = SignUpForm()
-    return render(request, 'game_planner/signup.html', {'form': form})
+    return render(request, 'game_planner_app/signup.html', {'form': form})
 
 @login_required
 def manage_profile(request):
@@ -81,10 +81,10 @@ def manage_profile(request):
         form = ManageProfileForm(request.POST, user=request.user)
         if form.is_valid():
             update_session_auth_hash(request, form.user)
-            return redirect('game_planner:profile', pk=request.user.id)
+            return redirect('game_planner_app:profile', pk=request.user.id)
     else:
         form = ManageProfileForm()
-    return render(request, 'game_planner/manage_profile.html', {'form': form})
+    return render(request, 'game_planner_app/manage_profile.html', {'form': form})
 
 @login_required
 def create_game(request):
@@ -92,10 +92,10 @@ def create_game(request):
         form = CreateGameForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
-            return redirect('game_planner:game_detail', pk=form.pk)
+            return redirect('game_planner_app:game_detail', pk=form.pk)
     else:
         form = CreateGameForm()
-    return render(request, 'game_planner/create_game.html', {'form': form})
+    return render(request, 'game_planner_app/create_game.html', {'form': form})
 
 @login_required
 def manage_game(request, pk):
@@ -113,18 +113,18 @@ def manage_game(request, pk):
         if request.method == 'POST':
             form = ManageGameForm(request.POST, game=game)
             if form.is_valid():
-                return redirect('game_planner:game_detail', pk=pk)
+                return redirect('game_planner_app:game_detail', pk=pk)
         else:
             form = ManageGameForm()
         
-        return render(request, 'game_planner/manage_game.html', {'form': form, 'participation_requests': participation_requests})
+        return render(request, 'game_planner_app/manage_game.html', {'form': form, 'participation_requests': participation_requests})
 
     else:
         return HttpResponseForbidden()
         
 class GamesListView(generic.ListView):
     model = Game
-    template_name = "game_planner/games.html"
+    template_name = "game_planner_app/games.html"
     context_object_name = 'games'
 
     def get_queryset(self):
@@ -147,7 +147,7 @@ class GamesListView(generic.ListView):
     
 class PlayersListView(generic.ListView):
     model = Player
-    template_name = "game_planner/players.html"
+    template_name = "game_planner_app/players.html"
     context_object_name = 'players'
 
     def get_queryset(self):
@@ -173,18 +173,18 @@ def game_detail(request, pk):
 
         active_participation_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
 
-        return render(request, 'game_planner/game_detail.html', {'game': game,
+        return render(request, 'game_planner_app/game_detail.html', {'game': game,
                                                                  'authorized': authorized,
                                                                  'is_admin': is_admin,
                                                                  'participating': participating,
                                                                  'active_participation_request': active_participation_request})
     
     else:
-        return render(request, 'game_planner/game_detail.html', {'game': game})
+        return render(request, 'game_planner_app/game_detail.html', {'game': game})
 
 class ProfileView(generic.DetailView):
     model = User
-    template_name = 'game_planner/profile.html'
+    template_name = 'game_planner_app/profile.html'
     context_object_name = 'profile_user'
 
     def get_context_data(self, **kwargs):
@@ -417,7 +417,7 @@ def friend_requests(request):
                                                 user=requested_player.user)
                             
                     notification.save()
-                    return redirect('game_planner:profile', pk=request_json['pk'])
+                    return redirect('game_planner_app:profile', pk=request_json['pk'])
             
             elif request_json['action'] == 'remove_friend':
                 player = Player.objects.get(user=request.user)
@@ -432,7 +432,7 @@ def friend_requests(request):
                 if notification:
                     notification.delete()
 
-                return redirect('game_planner:profile', pk=player_to_remove.user_id)
+                return redirect('game_planner_app:profile', pk=player_to_remove.user_id)
             
     # Display Friend Requests page
     else:
@@ -444,7 +444,7 @@ def friend_requests(request):
         params = {}
         params['friend_requests'] = friend_requests
 
-        return render(request, 'game_planner/friend_requests.html', params)
+        return render(request, 'game_planner_app/friend_requests.html', params)
 
 @login_required
 def manage_participation(request):
@@ -547,4 +547,4 @@ def manage_participation(request):
                                                 game=game,
                                                 user=game.admin)
                     notification.save()
-                    return redirect('game_planner:game_detail', pk=request_json['pk'])
+                    return redirect('game_planner_app:game_detail', pk=request_json['pk'])

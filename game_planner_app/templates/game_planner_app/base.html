@@ -15,29 +15,29 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/51738b8e2d.js"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'game_planner/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'game_planner_app/style.css' %}">
     <script>
         var csrftoken = '{{ csrf_token }}';
     </script>
-    <script src="{% static 'game_planner/script.js' %}"></script>
+    <script src="{% static 'game_planner_app/script.js' %}"></script>
 
     <title>{% block title %}Game planner: plan games with friends{% endblock %}</title>
 
     {% if user.is_authenticated %}
     <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-primary">
         <!-- "Game Planner" link to index -->
-        <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>
+        <a class="navbar-brand" href="{% url 'game_planner_app:index' %}">Game Planner</a>
 
         <!-- Links to Players, Games, and Create Game button -->
         <div class="collapse navbar-collapse order-3 order-sm-2" id="navbarNavDropdown">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'game_planner:players' %}">Players</a>
+                    <a class="nav-link" href="{% url 'game_planner_app:players' %}">Players</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'game_planner:games' %}">Games</a>
+                    <a class="nav-link" href="{% url 'game_planner_app:games' %}">Games</a>
                 </li>
-                <a class="btn btn-outline-light" href="{% url 'game_planner:create_game' %}">Create Game</a>
+                <a class="btn btn-outline-light" href="{% url 'game_planner_app:create_game' %}">Create Game</a>
             </ul>
         </div>
 
@@ -56,8 +56,8 @@
                 <div class="dropdown-menu dropdown-menu-right default-top-spacer" aria-labelledby="friendsDropdown">
                     <span class="dropdown-header">Social</span>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'game_planner:friend_requests' %}">Friend Requests</a>
-                    <a class="dropdown-item" href="{% url 'game_planner:players' %}">Find Players</a>
+                    <a class="dropdown-item" href="{% url 'game_planner_app:friend_requests' %}">Friend Requests</a>
+                    <a class="dropdown-item" href="{% url 'game_planner_app:players' %}">Find Players</a>
                 </div>
             </div>
 
@@ -106,35 +106,35 @@
                 <div class="dropdown-menu dropdown-menu-right default-top-spacer" aria-labelledby="profileDropdown">
                     <span class="dropdown-header">{{ user.username }}</span>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'game_planner:profile' user.pk %}">Profile</a>
-                    <a class="dropdown-item" href="{% url 'game_planner:manage_profile' %}">Manage Profile</a>
+                    <a class="dropdown-item" href="{% url 'game_planner_app:profile' user.pk %}">Profile</a>
+                    <a class="dropdown-item" href="{% url 'game_planner_app:manage_profile' %}">Manage Profile</a>
                 </div>
             </div>
 
             <!-- Logout button -->
-            <a class="btn btn-outline-light" href="{% url 'game_planner:logout' %}">Logout</a>
+            <a class="btn btn-outline-light" href="{% url 'game_planner_app:logout' %}">Logout</a>
 
         </div>
     </nav>
     {% else %}
     <nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-primary">
-        <a class="navbar-brand" href="{% url 'game_planner:index' %}">Game Planner</a>
+        <a class="navbar-brand" href="{% url 'game_planner_app:index' %}">Game Planner</a>
 
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'game_planner:players' %}">Players</a>
+                    <a class="nav-link" href="{% url 'game_planner_app:players' %}">Players</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'game_planner:games' %}">Games</a>
+                    <a class="nav-link" href="{% url 'game_planner_app:games' %}">Games</a>
                 </li>
             </ul>
         </div>
 
         <!-- Signup and Login buttons -->
         <div class="float-right">
-            <a class="btn btn-light" href="{% url 'game_planner:signup' %}">Signup</a>
-            <a class="btn btn-outline-light" href="{% url 'game_planner:login' %}">Login</a><br>
+            <a class="btn btn-light" href="{% url 'game_planner_app:signup' %}">Signup</a>
+            <a class="btn btn-outline-light" href="{% url 'game_planner_app:login' %}">Login</a><br>
         </div>
     </nav>
     {% endif %}

@@ -30,7 +30,7 @@
 <ul>
     {% for participation_request in participation_requests %}
     <li>
-        <a href="{% url 'game_planner:profile' participation_request.request_from.user.id %}">{{ participation_request.request_from }}</a>
+        <a href="{% url 'game_planner_app:profile' participation_request.request_from.user.id %}">{{ participation_request.request_from }}</a>
         <button onclick="send_request('/manage_participation/', {'state': 'accepted', 'pk': '{{ participation_request.pk }}'}, this)">Add to Game</button>
         <button onclick="send_request('/manage_participation/', {'state': 'declined', 'pk': '{{ participation_request.pk }}'}, this)">Delete</button>
     </li>

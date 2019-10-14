@@ -104,7 +104,7 @@ venv.bak/
 .mypy_cache/
 
 .vscode/
-game_planner/migrations/
+game_planner_app/migrations/
 
 
 

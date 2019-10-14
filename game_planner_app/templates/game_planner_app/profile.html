@@ -9,7 +9,7 @@
 {% if request_user == profile_user  %}
 
     <p>Email: {{ profile_user.email }}</p>
-    <a href="{% url 'game_planner:manage_profile' %}">ManageProfile</a><br>
+    <a href="{% url 'game_planner_app:manage_profile' %}">ManageProfile</a><br>
 
 {% elif request_user %}
 

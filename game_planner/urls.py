@@ -1,24 +1,22 @@
-from django.urls import path
-from django.contrib.auth.decorators import login_required
+"""game_planner_app URL Configuration
 
-from . import views
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/2.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import include, path
 
-app_name = 'game_planner'
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('signup/', views.signup, name='signup'),
-    path('players/', views.PlayersListView.as_view(), name='players'),
-    path('profile/<str:pk>', views.ProfileView.as_view(), name='profile'),
-    path('manage_profile/', views.manage_profile, name='manage_profile'),
-    path('create_game/', views.create_game, name='create_game'),
-    path('games/', login_required(views.GamesListView.as_view()), name='games'),
-    path('games/<str:pk>/', views.game_detail, name='game_detail'),
-    path('manage_game/<str:pk>/', views.manage_game, name='manage_game'),
-    path('friend_requests/', views.friend_requests, name='friend_requests'),
-    path('notification_read/', views.notification_read, name='notification_read'),
-    path('mark_all_as_read/', views.mark_all_as_read, name='mark_all_as_read'),
-    path('manage_participation/', views.manage_participation, name='manage_participation'),
-    path('get_notifications/', views.get_notifications, name='get_notifications'),
+    path('admin/', admin.site.urls),
+    path('', include('game_planner_app.urls')),
 ]
