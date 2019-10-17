@@ -19,4 +19,5 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('game_planner_app.urls')),
+    path('api/', include('game_planner_api.urls')),
 ]
