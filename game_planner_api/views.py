@@ -2,8 +2,8 @@ from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 
-from game_planner_api.serializers import PlayerSerializer
-from .models import Player
+from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer
+from .models import Player, Game
 
 class IndirectModelMixin:
 
@@ -49,3 +49,13 @@ class PlayerDetail(IndirectModelMixin,
 
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+
+class GameList(generics.ListAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+
+class GameDetail(generics.RetrieveAPIView):
+    lookup_field = 'game_id'
+
+    queryset = Game.objects.all()
+    serializer_class = GameExSerializer

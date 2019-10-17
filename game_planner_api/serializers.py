@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from .models import Player, Game
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
@@ -28,3 +28,18 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ['user', 'friends']
+
+class GameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ['game_id', 'name']
+
+class GameExSerializer(serializers.ModelSerializer):
+    num_players = serializers.SerializerMethodField() 
+
+    class Meta:
+        model = Game
+        fields = ['name', 'admin', 'when', 'where', 'num_players', 'price', 'duration', 'private']
+
+    def get_num_players(self, obj):
+        return obj.players.count()
