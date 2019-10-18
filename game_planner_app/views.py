@@ -272,46 +272,6 @@ def mark_all_as_read(request):
         return HttpResponseNotFound()
 
 @login_required
-def get_notifications(request):
-    user_notifications = Notification.objects.filter(user=request.user)
-
-    notifications = []
-
-    for notif in user_notifications:
-
-        notif_dict = model_to_dict(notif)
-
-        # Add necessary arguments to each type of notification
-        if(notif_dict['notification_type'] == NotificationType.FRIEND_REQ.value):
-            sender_player = Player.objects.get(user=notif_dict['sender'])
-            notif_dict['username'] = sender_player.user.username
-            notif_dict['user_href'] = sender_player.get_absolute_url()
-
-        elif(notif_dict['notification_type'] == NotificationType.ADDED_AS_FRIEND.value):
-            sender_player = Player.objects.get(user=notif_dict['sender'])
-            notif_dict['username'] = sender_player.user.username
-            notif_dict['user_href'] = sender_player.get_absolute_url()
-
-        elif(notif_dict['notification_type'] == NotificationType.PARTICIPATION_REQ.value):
-            sender_player = Player.objects.get(user=notif_dict['sender'])
-            game = Game.objects.get(game_id=notif_dict['game'])
-            notif_dict['username'] = sender_player.user.username
-            notif_dict['user_href'] = sender_player.get_absolute_url()
-            notif_dict['game_name'] = game.name
-            notif_dict['game_href'] = game.get_manage_url()
-            
-        elif(notif_dict['notification_type'] == NotificationType.ADDED_TO_GAME.value):
-            game = Game.objects.get(game_id=notif_dict['game'])
-            notif_dict['game_name'] = game.name
-            notif_dict['game_href'] = game.get_absolute_url()
-
-        notifications.append(notif_dict)
-
-    notifs_json = json.dumps(notifications, sort_keys=True, indent=1, cls=DjangoJSONEncoder)
-
-    return HttpResponse(notifs_json)
-
-@login_required
 def friend_requests(request):
 
     if request.GET and request.GET['notif_id']:

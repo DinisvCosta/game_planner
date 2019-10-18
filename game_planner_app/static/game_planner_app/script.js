@@ -52,7 +52,7 @@ function get_notifications() {
         }
     };
 
-    xhttp.open("GET", "/get_notifications/", true);
+    xhttp.open("GET", "/api/notifications/", true);
     xhttp.send();
 }
 
@@ -77,11 +77,11 @@ function make_notification_list(notification_json) {
         var text;
 
         if(notifications[i].notification_type === 0) {
-            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> wants to be your friend.";
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].sender + "</a> wants to be your friend.";
         } else if (notifications[i].notification_type === 1) {
-            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> wants to join " + "<a href=\"" + notifications[i].game_href + "\">" + notifications[i].game_name + "</a>."
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].sender + "</a> wants to join " + "<a href=\"" + notifications[i].game_href + "\">" + notifications[i].game_name + "</a>."
         } else if (notifications[i].notification_type === 2) {
-            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].username + "</a> accepted your friend request.";
+            text = "<a href=\"" + notifications[i].user_href + "\">" + notifications[i].sender + "</a> accepted your friend request.";
         } else if (notifications[i].notification_type === 3) {
             text = "You've been added to " + "<a href=\"" + notifications[i].game_href + "\">" + notifications[i].game_name + "</a>."
         }
