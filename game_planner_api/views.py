@@ -3,9 +3,10 @@ from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils import timezone
 
-from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer
-from .models import Player, Game
+from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer
+from .models import Player, Game, Notification
 
 class IndirectModelMixin:
 
@@ -101,3 +102,37 @@ class GameDetail(generics.RetrieveAPIView):
     serializer_class = GameExSerializer
 
     permission_classes = [GameDetailPermission]
+
+class NotificationList(generics.ListAPIView):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        """
+        Only show notifications of authenticated user.
+        """
+        qs = super().get_queryset()
+        
+        if self.request.user and self.request.user.is_authenticated:
+            user = self.request.user
+        
+            return qs.filter(user=user)
+
+    permission_classes = [permissions.IsAuthenticated]
+
+class NotificationDetailPermission(permissions.BasePermission):
+    
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+class NotificationDetail(generics.UpdateAPIView):
+    lookup_field = 'id'
+
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+    permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
+
+    def perform_update(self, serializer):
+        serializer.save(read_datetime = timezone.now())
+        

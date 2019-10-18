@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from .models import Player, Game
+from .models import Player, Game, Notification
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,3 +44,16 @@ class GameExSerializer(serializers.ModelSerializer):
 
     def get_num_players(self, obj):
         return obj.players.count()
+
+class NotificationSerializer(serializers.ModelSerializer):
+    notif_id = serializers.ReadOnlyField(source='pk')
+    sender = serializers.ReadOnlyField(source='sender.username')
+    game_name = serializers.ReadOnlyField(source='game.name')
+    game_href = serializers.ReadOnlyField(source='game.get_absolute_url')
+    #game_href = serializers.HyperlinkedRelatedField(source='game', read_only=True, view_name='game-detail', lookup_field='game_id')
+
+    class Meta:
+        model = Notification
+        fields = ['notif_id', 'notification_type', 'creation_datetime', 'read_datetime', 'read', 'sender', 'game_name', 'game_href']
+        read_only_fields = ['notif_id', 'notification_type', 'creation_datetime', 'sender', 'game_name', 'game_href']
+
