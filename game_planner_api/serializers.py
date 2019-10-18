@@ -29,13 +29,14 @@ class PlayerSerializer(serializers.ModelSerializer):
         model = Player
         fields = ['user', 'friends']
 
-class GameSerializer(serializers.ModelSerializer):
+class GameSerializer(serializers.ModelSerializer): 
     class Meta:
         model = Game
         fields = ['game_id', 'name']
 
 class GameExSerializer(serializers.ModelSerializer):
     num_players = serializers.SerializerMethodField() 
+    admin = serializers.ReadOnlyField(source='admin.username')
 
     class Meta:
         model = Game
