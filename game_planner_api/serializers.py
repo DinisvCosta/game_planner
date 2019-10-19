@@ -48,13 +48,13 @@ class GameExSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='pk')
     sender = serializers.ReadOnlyField(source='sender.username')
-    user_href = serializers.ReadOnlyField(source='sender.get_absolute_url')
+    sender_href = serializers.ReadOnlyField(source='sender.get_absolute_url')
     game_name = serializers.ReadOnlyField(source='game.name')
     game_href = serializers.ReadOnlyField(source='game.get_absolute_url')
     #game_href = serializers.HyperlinkedRelatedField(source='game', read_only=True, view_name='game-detail', lookup_field='game_id')
 
     class Meta:
         model = Notification
-        fields = ['id', 'notification_type', 'creation_datetime', 'read_datetime', 'read', 'sender', 'user_href', 'game_name', 'game_href']
-        read_only_fields = ['id', 'notification_type', 'creation_datetime', 'sender', 'user_href', 'game_name', 'game_href']
+        fields = ['id', 'notification_type', 'creation_datetime', 'read_datetime', 'read', 'sender', 'sender_href', 'game_name', 'game_href']
+        read_only_fields = ['id', 'notification_type', 'creation_datetime', 'sender', 'sender_href', 'game_name', 'game_href']
 
