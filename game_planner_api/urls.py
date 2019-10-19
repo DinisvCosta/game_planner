@@ -12,6 +12,7 @@ urlpatterns = [
     path('notifications/', views.NotificationList.as_view()),
     path('notifications/<int:id>', views.NotificationUpdate.as_view()),
 
+    path('friend_requests/', views.FriendRequestList.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

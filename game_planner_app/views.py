@@ -352,34 +352,8 @@ def friend_requests(request):
                 return HttpResponseForbidden()
         
         elif 'action' in request_json:
-            # request.user adds friend or removes friend
-            if request_json['action'] == 'add_friend':
-                # Check if there's already a request
-                requester_player = Player.objects.get(user=request.user)
-                requested_player = Player.objects.get(user_id=request_json['pk'])
-
-                active_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
-                
-                if active_request:
-                    return HttpResponseForbidden()
-                else:
-                    request_datetime = timezone.now()
-
-                    # Create friend request and send notification to user
-                    friend_request = FriendRequest(request_from=requester_player,
-                                                    request_to=requested_player,
-                                                    request_datetime=request_datetime)
-                    friend_request.save()
-                
-                    notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
-                                                creation_datetime=request_datetime,
-                                                sender=requester_player.user,
-                                                user=requested_player.user)
-                            
-                    notification.save()
-                    return redirect('game_planner_app:profile', pk=request_json['pk'])
-            
-            elif request_json['action'] == 'remove_friend':
+            # request.user removes friend
+            if request_json['action'] == 'remove_friend':
                 player = Player.objects.get(user=request.user)
                 player_to_remove = Player.objects.get(user_id=request_json['pk'])
                 player.friends.remove(player_to_remove)

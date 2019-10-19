@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
 
-from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer
-from .models import Player, Game, Notification
+from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer, FriendRequestSerializer
+from .models import Player, Game, Notification, FriendRequest, NotificationType
 
 class IndirectModelMixin:
 
@@ -138,3 +138,41 @@ class NotificationUpdate(generics.UpdateAPIView):
         # mark as read only assigns a datetime if value is null and unread clears the value?
         serializer.save(read_datetime = timezone.now())
         
+class FriendRequestList(generics.ListCreateAPIView):
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Only show friend requests of authenticated user.
+        """
+        qs = super().get_queryset()
+        
+        if self.request.user and self.request.user.is_authenticated:
+            user = self.request.user
+            player = Player.objects.get(user=user)
+        
+            return qs.filter(request_to=player)
+
+    def perform_create(self, serializer):
+        request_json = self.request.data
+
+        user = self.request.user
+
+        requester_player = Player.objects.get(user=user)
+        requested_player = Player.objects.get(user_id=request_json['pk'])
+
+        request_datetime = timezone.now()
+    
+        notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
+                                    creation_datetime=request_datetime,
+                                    sender=requester_player.user,
+                                    user=requested_player.user)
+                
+        notification.save()
+
+        serializer.save(request_from=requester_player,
+                        request_to=requested_player,
+                        request_datetime=request_datetime)
+                        

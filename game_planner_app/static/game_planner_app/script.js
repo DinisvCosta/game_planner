@@ -184,7 +184,7 @@ function send_request(url, args, elem) {
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
+        if (this.readyState == 4 && (this.status == 200 || this.status == 201)) {
             // Remove request from page
             //elem.parentNode.parentNode.removeChild(elem.parentNode);
             location.reload();
