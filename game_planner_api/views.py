@@ -125,7 +125,7 @@ class NotificationDetailPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 
-class NotificationDetail(generics.UpdateAPIView):
+class NotificationUpdate(generics.UpdateAPIView):
     lookup_field = 'id'
 
     queryset = Notification.objects.all()
@@ -134,5 +134,7 @@ class NotificationDetail(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
 
     def perform_update(self, serializer):
+        # TODO handle how requests marking as read or unread will change read_datetime
+        # mark as read only assigns a datetime if value is null and unread clears the value?
         serializer.save(read_datetime = timezone.now())
         

@@ -10,7 +10,7 @@ urlpatterns = [
     path('games/<str:game_id>/', views.GameDetail.as_view(), name='game-detail'),
 
     path('notifications/', views.NotificationList.as_view()),
-    path('notifications/<int:id>', views.NotificationDetail.as_view()),
+    path('notifications/<int:id>', views.NotificationUpdate.as_view()),
 
 ]
 
