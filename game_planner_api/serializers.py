@@ -9,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
 
+class UserCompactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']
+
 class UserExSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -34,13 +39,21 @@ class GameSerializer(serializers.ModelSerializer):
         model = Game
         fields = ['game_id', 'name']
 
+class PlayerCompactSerializer(serializers.ModelSerializer):
+    user = UserCompactSerializer(read_only=True)
+
+    class Meta:
+        model = Player
+        fields = ['user']
+
 class GameExSerializer(serializers.ModelSerializer):
     num_players = serializers.SerializerMethodField() 
     admin = serializers.ReadOnlyField(source='admin.username')
+    players = PlayerCompactSerializer(many=True, read_only=True)
 
     class Meta:
         model = Game
-        fields = ['name', 'admin', 'when', 'where', 'num_players', 'price', 'duration', 'private']
+        fields = ['name', 'admin', 'when', 'where', 'num_players', 'players', 'price', 'duration', 'private']
 
     def get_num_players(self, obj):
         return obj.players.count()
