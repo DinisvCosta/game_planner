@@ -153,7 +153,7 @@ class FriendRequestList(generics.ListCreateAPIView):
             user = self.request.user
             player = Player.objects.get(user=user)
         
-            return qs.filter(Q(request_to=player) | Q(request_from=player))
+            return qs.filter((Q(request_to=player) | Q(request_from=player)) & Q(state__isnull=True))
 
     def perform_create(self, serializer):
         request_json = self.request.data

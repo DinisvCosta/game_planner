@@ -77,8 +77,10 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class FriendRequestSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='pk')
+    request_to = serializers.ReadOnlyField(source='request_to.user.username')
+    request_from = serializers.ReadOnlyField(source='request_from.user.username')
 
     class Meta:
         model = FriendRequest
-        fields = ['id', 'request_to', 'request_from', 'request_datetime', 'action_taken_datetime', 'state']
-        read_only_fields = ['id', 'request_to', 'request_from', 'request_datetime', 'action_taken_datetime', 'state']
+        fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
+        read_only_fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
