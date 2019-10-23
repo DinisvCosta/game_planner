@@ -176,3 +176,23 @@ class FriendRequestList(generics.ListCreateAPIView):
                         request_to=requested_player,
                         request_datetime=request_datetime)
                         
+class FriendRequestDetailPermission(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+
+        requester_user = User.objects.get(username=obj.request_from.user.username)
+        requested_user = User.objects.get(username=obj.request_to.user.username)
+
+        if request.method in permissions.SAFE_METHODS:
+            return ((request.user == requested_user) | (request.user == requester_user)) and obj.state == None
+        
+        # requested and requester can use non safe methods 
+        return (request.user == requested_user) | (request.user == requester_user)
+
+class FriendRequestDetail(generics.RetrieveUpdateAPIView):
+    lookup_field = 'id'
+
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+
+    permission_classes = [permissions.IsAuthenticated, FriendRequestDetailPermission]
