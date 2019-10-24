@@ -1,5 +1,7 @@
 from rest_framework import generics
 from rest_framework import permissions
+from rest_framework import exceptions
+
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -137,11 +139,20 @@ class NotificationUpdate(generics.UpdateAPIView):
         # TODO handle how requests marking as read or unread will change read_datetime
         # mark as read only assigns a datetime if value is null and unread clears the value?
         serializer.save(read_datetime = timezone.now())
-        
+
+class Conflict(exceptions.APIException):
+    status_code = 409
+    default_detail = 'Conflict'
+    default_code = 'conflict'
+
 class FriendRequestList(generics.ListCreateAPIView):
     queryset = FriendRequest.objects.all()
     serializer_class = FriendRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    # TODO deal with GET /friend_requests?filter=incoming or outgoing
+    # use request.query_params to filter friend requests as incoming or outgoing 
+    # more info at: https://www.django-rest-framework.org/api-guide/requests/#query_params
 
     def get_queryset(self):
         """
@@ -162,6 +173,17 @@ class FriendRequestList(generics.ListCreateAPIView):
 
         requester_player = Player.objects.get(user=user)
         requested_player = Player.objects.get(user_id=request_json['pk'])
+
+        if requester_player == requested_player:
+            raise exceptions.PermissionDenied(detail="A player cannot add himself as a friend.")
+
+        outgoing_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
+        incoming_request = FriendRequest.objects.filter(request_from=requested_player, request_to=requester_player, state__isnull=True)
+
+        active_request = outgoing_request or incoming_request
+    
+        if active_request:
+            raise Conflict(detail="An active friend request alredy exists between those users.")
 
         request_datetime = timezone.now()
     
