@@ -281,77 +281,7 @@ def friend_requests(request):
     if request.method == 'POST':
         request_json = json.loads(request.body)
         
-        if 'state' in request_json:
-            friend_request = FriendRequest.objects.get(pk=request_json['pk'])
-
-            # Receiving player confirms or deletes friend request
-            if request.user == friend_request.request_to.user:
-                if request_json['state'] == "accepted":
-                    request_datetime = timezone.now()
-
-                    # Add to player's friends list and send notification to new friend
-                    player = Player.objects.get(user=request.user)
-                    player.friends.add(friend_request.request_from)
-
-                    notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
-                                                creation_datetime=request_datetime,
-                                                sender=player.user,
-                                                user=friend_request.request_from.user)
-                    notification.save()
-
-                    # Update friend_request state and save datetime of action_taken
-                    friend_request.state = "ACCEPTED"
-                    friend_request.action_taken_datetime = request_datetime
-                    friend_request.save()
-
-                    # Mark friend request notification as read if it still is unread
-                    friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                                creation_datetime=friend_request.request_datetime,
-                                                                user=friend_request.request_to.user,
-                                                                read=False)
-                    if friend_request_notification:
-                        notification_read_common(request.user, friend_request_notification[0].pk)
-
-                    return HttpResponse("OK")
-
-                elif request_json['state'] == "declined":
-                    # Update friend_request state and save datetime of action_taken
-                    friend_request.state = "DECLINED"
-                    friend_request.action_taken_datetime = timezone.now()
-                    friend_request.save()
-
-                    # Mark friend request notification as read if it still is unread
-                    notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                                creation_datetime=friend_request.request_datetime,
-                                                                user=friend_request.request_to.user,
-                                                                read=False)
-                    if notification:
-                        notification_read_common(request.user, notification[0].pk)
-
-                    return HttpResponse("OK")
-            
-            # Sender cancels friend request
-            elif request.user == friend_request.request_from.user:
-                # Update friend_request state and save datetime of action_taken
-                if request_json['state'] == 'cancel':
-                    friend_request.state = 'CANCELED'
-                    friend_request.action_taken_datetime = timezone.now()
-                    friend_request.save()
-                    
-                    # Remove notification from requested player
-                    notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
-                                                                creation_datetime=friend_request.request_datetime,
-                                                                user=friend_request.request_to.user,
-                                                                read=False)
-                    if notification:
-                        notification.delete()
-                    
-                    return HttpResponse("OK")
-                    
-            else:
-                return HttpResponseForbidden()
-        
-        elif 'action' in request_json:
+        if 'action' in request_json:
             # request.user removes friend
             if request_json['action'] == 'remove_friend':
                 player = Player.objects.get(user=request.user)

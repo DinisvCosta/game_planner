@@ -1,6 +1,8 @@
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import exceptions
+from rest_framework import status
+from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -218,3 +220,89 @@ class FriendRequestDetail(generics.RetrieveUpdateAPIView):
     serializer_class = FriendRequestSerializer
 
     permission_classes = [permissions.IsAuthenticated, FriendRequestDetailPermission]
+
+    # PUT request returns 403 Forbidden (only PATCH allowed)
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def update(self, request, *args, **kwargs):
+        id = kwargs['id']
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, id)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer, id):
+        friend_request = FriendRequest.objects.get(id=id)
+
+        if not ((self.request.user == friend_request.request_from.user or self.request.user == friend_request.request_to.user) and not friend_request.state):
+            raise exceptions.PermissionDenied()
+        
+        if self.request.user == friend_request.request_from.user and 'action' in self.request.data and self.request.data['action'] == 'cancel':
+            notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                        creation_datetime=friend_request.request_datetime,
+                                                        user=friend_request.request_to.user,
+                                                        read=False)
+            if notification:
+                notification.delete()
+            serializer.save(state="CANCELED",
+                            action_taken_datetime=timezone.now())
+        
+        elif self.request.user == friend_request.request_to.user and 'action' in self.request.data and self.request.data['action'] == 'accept':
+            request_datetime = timezone.now()
+
+            # Add to player's friends list and send notification to new friend
+            player = Player.objects.get(user=self.request.user)
+            player.friends.add(friend_request.request_from)
+
+            notification = Notification(notification_type=NotificationType.ADDED_AS_FRIEND.value,
+                                        creation_datetime=request_datetime,
+                                        sender=player.user,
+                                        user=friend_request.request_from.user)
+            notification.save()
+
+            # Mark friend request notification as read if it still is unread
+            friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                        creation_datetime=friend_request.request_datetime,
+                                                        user=friend_request.request_to.user,
+                                                        read=False)
+            
+            if friend_request_notification:
+                friend_request_notification = Notification.objects.get(pk=friend_request_notification[0].pk)
+                friend_request_notification.read = True
+                friend_request_notification.read_datetime = request_datetime
+                friend_request_notification.save()
+            
+            # Update friend_request state and save datetime of action_taken
+            serializer.save(state="ACCEPTED",
+                            action_taken_datetime=request_datetime)
+
+        elif self.request.user == friend_request.request_to.user and 'action' in self.request.data and self.request.data['action'] == 'decline':
+            request_datetime = timezone.now()
+
+            # Mark friend request notification as read if it still is unread
+            friend_request_notification = Notification.objects.filter(notification_type=NotificationType.FRIEND_REQ.value,
+                                                        creation_datetime=friend_request.request_datetime,
+                                                        user=friend_request.request_to.user,
+                                                        read=False)
+            
+            if friend_request_notification:
+                friend_request_notification = Notification.objects.get(pk=friend_request_notification[0].pk)
+                friend_request_notification.read = True
+                friend_request_notification.read_datetime = request_datetime
+                friend_request_notification.save()
+
+            # Update friend_request state and save datetime of action_taken
+            serializer.save(state="DECLINED",
+                            action_taken_datetime=request_datetime)
+
+        else:
+            raise exceptions.ParseError()

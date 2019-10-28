@@ -22,13 +22,13 @@
 
     {% if not participating and not active_participation_request %}
 
-        <button onclick="send_request('/manage_participation/', {'action': 'request_participation', 'pk': '{{ game.game_id }}'}, this)">Request participation</button>
+        <button onclick="send_request('POST', '/manage_participation/', {'action': 'request_participation', 'pk': '{{ game.game_id }}'})">Request participation</button>
 
     {% elif active_participation_request %}
 
         {% for participation_request in active_participation_request %}
             
-            <button onclick="send_request('/manage_participation/', {'state': 'cancel', 'pk': '{{ participation_request.pk }}'}, this)">Cancel participation request</button>
+            <button onclick="send_request('POST', '/manage_participation/', {'state': 'cancel', 'pk': '{{ participation_request.pk }}'})">Cancel participation request</button>
 
         {% endfor %}
         

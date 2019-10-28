@@ -180,18 +180,16 @@ function make_notification_list(notification_json) {
     }, 1000);
 }
 
-function send_request(url, args, elem) {
+function send_request(method, url, args) {
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && (this.status == 200 || this.status == 201)) {
-            // Remove request from page
-            //elem.parentNode.parentNode.removeChild(elem.parentNode);
             location.reload();
         }
     };
 
-    xhttp.open("POST", url, true);
+    xhttp.open(method, url, true);
 
     //Send the proper header information along with the request
     xhttp.setRequestHeader("Content-Type", "application/json");

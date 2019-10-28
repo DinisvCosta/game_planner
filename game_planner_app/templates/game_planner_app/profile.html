@@ -15,13 +15,13 @@
 
     {% if are_friends %}
 
-        <button onclick="send_request('/friend_requests/', {'action': 'remove_friend', 'pk': '{{ profile_user.id }}'}, this)">Remove Friend</button>
+        <button onclick="send_request('POST', '/friend_requests/', {'action': 'remove_friend', 'pk': '{{ profile_user.id }}'})">Remove Friend</button>
 
     {% else %}
 
         {% if not incoming_request and not outgoing_request %}
         
-            <button onclick="send_request('/api/friend_requests/', {'pk': '{{ profile_user.id }}'}, this)">Add Friend</button>
+            <button onclick="send_request('POST', '/api/friend_requests/', {'pk': '{{ profile_user.id }}'})">Add Friend</button>
 
         {% elif incoming_request %}
 
@@ -29,8 +29,8 @@
 
                 <div>
                     <p>{{ profile_user.username }} has sent you a friend request.</p>
-                    <button onclick="send_request('/friend_requests/', {'state': 'accepted', 'pk': '{{ friend_request.pk }}'}, this)">Confirm</button>
-                    <button onclick="send_request('/friend_requests/', {'state': 'declined', 'pk': '{{ friend_request.pk }}'}, this)">Delete</button>
+                    <button onclick="send_request('PATCH', '/api/friend_requests/{{ friend_request.pk }}', {'action': 'accept'})">Confirm</button>
+                    <button onclick="send_request('PATCH', '/api/friend_requests/{{ friend_request.pk }}', {'action': 'decline'})">Delete</button>
                 </div>
 
             {% endfor %}
@@ -40,7 +40,7 @@
             {% for friend_request in outgoing_request %}
             
                 <div>
-                    <button onclick="send_request('/friend_requests/', {'state': 'cancel', 'pk': '{{ friend_request.pk }}'}, this)">Cancel friend request</button>
+                    <button onclick="send_request('POST', '/api/friend_requests/', {'action': 'cancel'})">Cancel friend request</button>
                 </div>
 
             {% endfor %}
