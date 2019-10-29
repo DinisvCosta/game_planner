@@ -173,8 +173,16 @@ class FriendRequestList(generics.ListCreateAPIView):
 
         user = self.request.user
 
+        if not 'username' in request_json:
+            raise exceptions.ParseError(detail="\"username\" body parameter missing.")
+
         requester_player = Player.objects.get(user=user)
-        requested_player = Player.objects.get(user_id=request_json['pk'])
+        requested_user = User.objects.filter(username=request_json['username'])
+
+        if not requested_user:
+            raise exceptions.NotFound(detail="Player %s not found." % request_json['username'])
+        
+        requested_player = Player.objects.get(user=requested_user[0])
 
         if requester_player == requested_player:
             raise exceptions.PermissionDenied(detail="A player cannot add himself as a friend.")
