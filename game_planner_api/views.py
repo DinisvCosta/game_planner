@@ -223,7 +223,7 @@ class FriendRequestDetail(generics.RetrieveUpdateAPIView):
 
     # PUT request returns 403 Forbidden (only PATCH allowed)
     def put(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def update(self, request, *args, **kwargs):
         id = kwargs['id']
