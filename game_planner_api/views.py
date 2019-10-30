@@ -49,13 +49,53 @@ class PlayerList(generics.ListAPIView):
     serializer_class = PlayerSerializer
 
 class PlayerDetail(IndirectModelMixin,
-                   generics.RetrieveAPIView):
+                   generics.RetrieveUpdateAPIView):
     lookup_field = 'username'
     indirect_lookup_field = 'user'
     indirect_model = User
 
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def perform_update(self, serializer):
+        request_json = self.request.data
+
+        user = self.request.user
+
+        # Authenticated user removes {username} as friend
+        if 'action' in request_json and request_json['action'] == "remove_friend":
+
+            requester_player = Player.objects.get(user=user)
+            user_to_remove = User.objects.get(username=self.kwargs['username'])
+
+            if not user_to_remove:
+                raise exceptions.NotFound(detail="Player %s not found." % self.kwargs['username'])
+
+            player_to_remove = Player.objects.get(user=user_to_remove)
+
+            are_friends = player_to_remove in requester_player.friends.all()
+
+            if not are_friends:
+                raise exceptions.NotFound(detail="You are not %s's friend." % self.kwargs['username'])
+
+            requester_player.friends.remove(player_to_remove)
+
+            # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
+            notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
+                                                        user=player_to_remove.user,
+                                                        read=False)
+            
+            if notification:
+                notification.delete()
+
+            serializer.save()
+        
+        else:
+            raise exceptions.ParseError()
 
 class GameList(generics.ListAPIView):
     queryset = Game.objects.all()
