@@ -195,6 +195,11 @@ class FriendRequestList(generics.ListCreateAPIView):
         if active_request:
             raise Conflict(detail="An active friend request alredy exists between those users.")
 
+        already_friends = requested_player in list(requester_player.friends.all())
+
+        if already_friends:
+            raise Conflict(detail="Players are already friends with eachother.")
+
         request_datetime = timezone.now()
     
         notification = Notification(notification_type=NotificationType.FRIEND_REQ.value,
