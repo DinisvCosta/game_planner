@@ -279,7 +279,7 @@ class FriendRequestDetail(generics.RetrieveUpdateAPIView):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def perform_update(self, serializer):
-        friend_request = FriendRequest.objects.get(id=self.kwars['id'])
+        friend_request = FriendRequest.objects.get(id=self.kwargs['id'])
 
         if not ((self.request.user == friend_request.request_from.user or self.request.user == friend_request.request_to.user) and not friend_request.state):
             raise exceptions.PermissionDenied()
