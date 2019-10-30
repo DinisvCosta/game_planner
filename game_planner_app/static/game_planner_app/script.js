@@ -52,7 +52,7 @@ function get_notifications() {
         }
     };
 
-    xhttp.open("GET", "/api/notifications/", true);
+    xhttp.open("GET", "/api/notifications", true);
     xhttp.send();
 }
 
