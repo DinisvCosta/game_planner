@@ -274,27 +274,12 @@ class FriendRequestDetail(generics.RetrieveUpdateAPIView):
 
     permission_classes = [permissions.IsAuthenticated, FriendRequestDetailPermission]
 
-    # PUT request returns 403 Forbidden (only PATCH allowed)
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
     def put(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def update(self, request, *args, **kwargs):
-        id = kwargs['id']
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer, id)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
-
-    def perform_update(self, serializer, id):
-        friend_request = FriendRequest.objects.get(id=id)
+    def perform_update(self, serializer):
+        friend_request = FriendRequest.objects.get(id=self.kwars['id'])
 
         if not ((self.request.user == friend_request.request_from.user or self.request.user == friend_request.request_to.user) and not friend_request.state):
             raise exceptions.PermissionDenied()
