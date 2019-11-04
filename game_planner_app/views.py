@@ -329,6 +329,7 @@ def manage_participation(request):
 
                     notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
                                                 creation_datetime=request_datetime,
+                                                sender=participation_request.request_to_game.admin,
                                                 game=participation_request.request_to_game,
                                                 user=participation_request.request_from.user)
                     notification.save()

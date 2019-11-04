@@ -177,10 +177,27 @@ class NotificationUpdate(generics.UpdateAPIView):
 
     permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
 
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def perform_update(self, serializer):
-        # TODO handle how requests marking as read or unread will change read_datetime
-        # mark as read only assigns a datetime if value is null and unread clears the value?
-        serializer.save(read_datetime = timezone.now())
+        notification = Notification.objects.get(id=self.kwargs['id'])
+
+        if not self.request.user == notification.user:
+            raise exceptions.PermissionDenied()
+
+        if 'action' in self.request.data and self.request.data['action'] == 'mark_as_read':
+            if not notification.read_datetime:
+                serializer.save(read=True,
+                                read_datetime=timezone.now())
+
+        elif 'action' in self.request.data and self.request.data['action'] == 'mark_as_unread':
+            serializer.save(read=False,
+                            read_datetime=None)
+
+        else:
+            raise exceptions.ParseError()
 
 class Conflict(exceptions.APIException):
     status_code = 409

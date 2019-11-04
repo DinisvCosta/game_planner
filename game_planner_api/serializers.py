@@ -69,7 +69,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'notification_type', 'creation_datetime', 'read_datetime', 'read', 'sender', 'sender_href', 'game_name', 'game_href']
-        read_only_fields = ['id', 'notification_type', 'creation_datetime', 'read_datetime', 'sender', 'sender_href', 'game_name', 'game_href']
+        read_only_fields = ['id', 'notification_type', 'creation_datetime', 'read_datetime', 'read', 'sender', 'sender_href', 'game_name', 'game_href']
     
     def get_sender_href(self, obj):
         sender_player = Player.objects.get(user=obj.sender)

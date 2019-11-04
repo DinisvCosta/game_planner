@@ -40,7 +40,7 @@
             {% for friend_request in outgoing_request %}
             
                 <div>
-                    <button onclick="send_request('POST', '/api/friend_requests', {'action': 'cancel'})">Cancel friend request</button>
+                    <button onclick="send_request('PATCH', '/api/friend_requests/{{ friend_request.pk }}', {'action': 'cancel'})">Cancel friend request</button>
                 </div>
 
             {% endfor %}
