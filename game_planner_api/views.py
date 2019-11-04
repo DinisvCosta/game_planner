@@ -169,7 +169,7 @@ class NotificationDetailPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 
-class NotificationUpdate(generics.UpdateAPIView):
+class NotificationUpdate(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     queryset = Notification.objects.all()
@@ -177,7 +177,11 @@ class NotificationUpdate(generics.UpdateAPIView):
 
     permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
 
-    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
+    # override parent class put method so that HTTP GET request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
+    def get(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
     def put(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
