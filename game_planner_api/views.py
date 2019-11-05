@@ -169,7 +169,7 @@ class NotificationDetailPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 
-class NotificationUpdate(generics.RetrieveUpdateDestroyAPIView):
+class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     queryset = Notification.objects.all()
