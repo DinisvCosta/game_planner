@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from .models import Player, Game, Notification, FriendRequest
+from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,3 +84,17 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         model = FriendRequest
         fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
         read_only_fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
+
+class GameParticipationRequestSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='pk')
+    game_name = serializers.SerializerMethodField()
+    request_from = serializers.ReadOnlyField(source='request_from.user.username')
+
+    class Meta:
+        model = GameParticipationRequest
+        fields = ['id', 'request_from', 'request_to_game', 'game_name', 'request_datetime', 'action_taken_datetime', 'state']
+        read_only_fields = ['id', 'request_from', 'request_to_game', 'game_name', 'request_datetime', 'action_taken_datetime', 'state']
+    
+    def get_game_name(self, obj):
+        game_name = obj.request_to_game.name
+        return game_name

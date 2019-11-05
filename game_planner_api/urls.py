@@ -15,6 +15,8 @@ urlpatterns = [
     path('friend_requests', views.FriendRequestList.as_view()),
     path('friend_requests/<int:id>', views.FriendRequestDetail.as_view()),
 
+    path('game_participation_requests', views.GameParticipationRequestList.as_view()),
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

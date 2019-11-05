@@ -9,8 +9,8 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
 
-from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer, FriendRequestSerializer
-from .models import Player, Game, Notification, FriendRequest, NotificationType
+from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer, FriendRequestSerializer, GameParticipationRequestSerializer
+from .models import Player, Game, NotificationType, Notification, FriendRequest, GameParticipationRequest
 
 class IndirectModelMixin:
 
@@ -254,7 +254,7 @@ class FriendRequestList(generics.ListCreateAPIView):
         active_request = outgoing_request or incoming_request
     
         if active_request:
-            raise Conflict(detail="An active friend request alredy exists between those users.")
+            raise Conflict(detail="An active friend request already exists between those users.")
 
         already_friends = requested_player in list(requester_player.friends.all())
 
@@ -365,3 +365,58 @@ class FriendRequestDetail(generics.RetrieveUpdateAPIView):
 
         else:
             raise exceptions.ParseError()
+
+class GameParticipationRequestList(generics.ListCreateAPIView):
+    queryset = GameParticipationRequest.objects.all()
+    serializer_class = GameParticipationRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Only show game participation requests of games that authenticated user is administering.
+        """
+        qs = super().get_queryset()
+        
+        if self.request.user and self.request.user.is_authenticated:
+            user = self.request.user
+        
+            return qs.filter(Q(request_to_game__admin=user) & Q(state__isnull=True))
+
+    def perform_create(self, serializer):
+
+        request_json = self.request.data
+
+        user = self.request.user
+
+        if not 'game_id' in request_json:
+            raise exceptions.ParseError(detail="'game_id' body parameter missing.")
+
+        player = Player.objects.get(user=user)
+        game = get_object_or_404(Game, game_id=request_json['game_id'])
+
+        if player.user == game.admin:
+            raise exceptions.PermissionDenied(detail="A game admin cannot request participation to said game.")
+
+        active_request = GameParticipationRequest.objects.filter(request_from=player, request_to_game=game, state__isnull=True)
+
+        if active_request:
+            raise Conflict(detail="An active request already exists from this user.")
+
+        participating = player in game.players.all()
+    
+        if participating:
+            raise Conflict(detail="Already participating.")
+
+        request_datetime = timezone.now()
+    
+        notification = Notification(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                    creation_datetime=request_datetime,
+                                    sender=user,
+                                    game=game,
+                                    user=game.admin)
+                
+        notification.save()
+
+        serializer.save(request_from=player,
+                        request_to_game=game,
+                        request_datetime=request_datetime)
