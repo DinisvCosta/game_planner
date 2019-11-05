@@ -15,7 +15,7 @@
 
     {% if are_friends %}
 
-        <button onclick="send_request('POST', '/friend_requests/', {'action': 'remove_friend', 'pk': '{{ profile_user.id }}'})">Remove Friend</button>
+        <button onclick="send_request('PATCH', '/api/players/{{ profile_user.username }}', {'action': 'remove_friend'})">Remove Friend</button>
 
     {% else %}
 

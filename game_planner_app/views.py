@@ -276,39 +276,16 @@ def friend_requests(request):
 
     if request.GET and request.GET['notif_id']:
         notification_read_common(request.user, request.GET['notif_id'])
-
-    # Deal with friend request "Add Friend", "Remove Friend", "Confirm", "Delete", "Cancel friend request" button press
-    if request.method == 'POST':
-        request_json = json.loads(request.body)
-        
-        if 'action' in request_json:
-            # request.user removes friend
-            if request_json['action'] == 'remove_friend':
-                player = Player.objects.get(user=request.user)
-                player_to_remove = Player.objects.get(user_id=request_json['pk'])
-                player.friends.remove(player_to_remove)
-
-                # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
-                notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
-                                                            user=player_to_remove.user,
-                                                            read=False)
-                
-                if notification:
-                    notification.delete()
-
-                return redirect('game_planner_app:profile', pk=player_to_remove.user_id)
             
     # Display Friend Requests page
-    else:
-        request_player = Player.objects.get(user=request.user)
+    request_player = Player.objects.get(user=request.user)
+    # friend requests list only shows requests that are still pending received by authenticated user
+    friend_requests = FriendRequest.objects.filter(request_to=request_player, state__isnull=True)
 
-        # friend requests list only shows requests that are still pending received by authenticated user
-        friend_requests = FriendRequest.objects.filter(request_to=request_player, state__isnull=True)
+    params = {}
+    params['friend_requests'] = friend_requests
 
-        params = {}
-        params['friend_requests'] = friend_requests
-
-        return render(request, 'game_planner_app/friend_requests.html', params)
+    return render(request, 'game_planner_app/friend_requests.html', params)
 
 @login_required
 def manage_participation(request):
