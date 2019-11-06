@@ -137,3 +137,9 @@ STATIC_URL = '/static/'
 # App specific settings
 
 LOGIN_URL = '/login/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
+}
