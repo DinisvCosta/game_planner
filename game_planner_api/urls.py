@@ -16,6 +16,7 @@ urlpatterns = [
     path('friend_requests/<int:id>', views.FriendRequestDetail.as_view()),
 
     path('game_participation_requests', views.GameParticipationRequestList.as_view()),
+    path('game_participation_requests/<int:id>', views.GameParticipationRequestDetail.as_view()),
 
 ]
 

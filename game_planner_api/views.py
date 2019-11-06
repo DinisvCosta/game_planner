@@ -417,3 +417,92 @@ class GameParticipationRequestList(generics.ListCreateAPIView):
         serializer.save(request_from=player,
                         request_to_game=game,
                         request_datetime=request_datetime)
+
+class GamePaticipationRequestDetailPermission(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        return ((request.user == obj.request_from.user or request.user == obj.request_to_game.admin) and not obj.state)
+
+class GameParticipationRequestDetail(generics.RetrieveUpdateAPIView):
+    lookup_field = 'id'
+
+    queryset = GameParticipationRequest.objects.all()
+    serializer_class = GameParticipationRequestSerializer
+
+    permission_classes = [permissions.IsAuthenticated, GamePaticipationRequestDetailPermission]
+
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def perform_update(self, serializer):
+        participation_request = GameParticipationRequest.objects.get(id=self.kwargs['id'])
+
+        if not ((self.request.user == participation_request.request_from.user or self.request.user == participation_request.request_to_game.admin) and not participation_request.state):
+            raise exceptions.PermissionDenied()
+
+        if self.request.user == participation_request.request_from.user and 'action' in self.request.data and self.request.data['action'] == 'cancel':
+
+            # Remove notification from game admin if it still is unread
+            notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                    creation_datetime=participation_request.request_datetime,
+                                                    user=participation_request.request_to_game.admin,
+                                                    read=False)
+            if notification:
+                notification.delete()
+
+            serializer.save(state="CANCELED",
+                            action_taken_datetime=timezone.now())
+        
+        elif self.request.user == participation_request.request_to_game.admin and 'action' in self.request.data and self.request.data['action'] == 'accept':
+
+            request_datetime = timezone.now()
+
+            # Add player to game players list and send notification to player
+            participation_request.request_to_game.players.add(participation_request.request_from)
+
+            notification = Notification(notification_type=NotificationType.ADDED_TO_GAME.value,
+                                        creation_datetime=request_datetime,
+                                        sender=participation_request.request_to_game.admin,
+                                        game=participation_request.request_to_game,
+                                        user=participation_request.request_from.user)
+            notification.save()
+
+            # Mark game participation request notification as read if it still is unread
+            participation_request_notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                                            creation_datetime=participation_request.request_datetime,
+                                                                            user=participation_request.request_to_game.admin,
+                                                                            read=False)
+            
+            if participation_request_notification:
+                participation_request_notification = Notification.objects.get(pk=participation_request_notification[0].pk)
+                participation_request_notification.read = True
+                participation_request_notification.read_datetime = request_datetime
+                participation_request_notification.save()
+
+            # Update participation_request state and save datetime of action_taken
+            serializer.save(state="ACCEPTED",
+                            action_taken_datetime=request_datetime)
+            
+        elif self.request.user == participation_request.request_to_game.admin and 'action' in self.request.data and self.request.data['action'] == 'decline':
+
+            request_datetime = timezone.now()
+
+            # Mark game participation request notification as read if it still is unread
+            notification = Notification.objects.filter(notification_type=NotificationType.PARTICIPATION_REQ.value,
+                                                    creation_datetime=participation_request.request_datetime,
+                                                    user=participation_request.request_to_game.admin,
+                                                    read=False)
+                                                    
+            if notification:
+                notification = Notification.objects.get(pk=notification[0].pk)
+                notification.read = True
+                notification.read_datetime = request_datetime
+                notification.save()
+
+            # Update participation_request state and save datetime of action_taken
+            serializer.save(state="DECLINED",
+                            action_taken_datetime=request_datetime)
+
+        else:
+            raise exceptions.ParseError()
