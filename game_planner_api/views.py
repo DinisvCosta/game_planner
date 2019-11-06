@@ -177,7 +177,7 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
 
-    # override parent class put method so that HTTP GET request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
+    # override parent class get method so that HTTP GET request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
     def get(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -379,8 +379,9 @@ class GameParticipationRequestList(generics.ListCreateAPIView):
         
         if self.request.user and self.request.user.is_authenticated:
             user = self.request.user
+            player = Player.objects.get(user=user)
         
-            return qs.filter(Q(request_to_game__admin=user) & Q(state__isnull=True))
+            return qs.filter((Q(request_to_game__admin=user) | Q(request_from=player)) & Q(state__isnull=True))
 
     def perform_create(self, serializer):
 
