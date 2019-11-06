@@ -177,10 +177,6 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
 
     permission_classes = [permissions.IsAuthenticated, NotificationDetailPermission]
 
-    # override parent class get method so that HTTP GET request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
-    def get(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
     # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH and DELETE requests allowed)
     def put(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
