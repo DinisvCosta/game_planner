@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import exceptions
@@ -72,9 +74,6 @@ class PlayerDetail(IndirectModelMixin,
             requester_player = Player.objects.get(user=user)
             user_to_remove = User.objects.get(username=self.kwargs['username'])
 
-            if not user_to_remove:
-                raise exceptions.NotFound(detail="Player %s not found." % self.kwargs['username'])
-
             player_to_remove = Player.objects.get(user=user_to_remove)
 
             are_friends = player_to_remove in requester_player.friends.all()
@@ -94,6 +93,34 @@ class PlayerDetail(IndirectModelMixin,
 
             serializer.save()
         
+        # Authenticated player updates his info
+        if 'action' in request_json and request_json['action'] == "update_player":
+
+            user_to_update = User.objects.get(username=self.kwargs['username'])
+
+            if not user_to_update == user:
+                raise exceptions.PermissionDenied()
+
+            if 'first_name' in request_json and len(request_json['first_name']) > 30:
+                raise exceptions.ParseError(detail="'first_name' must be a string with 30 characters or fewer.")
+            
+            if 'last_name' in request_json and len(request_json['last_name']) > 150:
+                raise exceptions.ParseError(detail="'last_name' must be a string with 150 characters or fewer.")
+
+            if 'email' in request_json and request_json['email'] and not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", request_json['email']):
+                raise exceptions.ParseError(detail="Invalid 'email' address.")
+            
+            if request_json['first_name']:
+                user.first_name = request_json['first_name']
+
+            if request_json['last_name']:
+                user.last_name = request_json['last_name']
+
+            if request_json['email']:
+                user.email = request_json['email']
+
+            user.save()
+
         else:
             raise exceptions.ParseError()
 
@@ -121,6 +148,11 @@ class GameList(generics.ListAPIView):
 
 class GameDetailPermission(permissions.BasePermission):
     
+    """
+    Public games can be seen by unauthenticated users
+    Private games can only be seen by participating players or admin
+    Games can be changed by game admin
+    """
     def has_object_permission(self, request, view, obj):
 
         if request.method in permissions.SAFE_METHODS:
@@ -139,13 +171,51 @@ class GameDetailPermission(permissions.BasePermission):
         # admin user can use non safe methods
         return obj.admin == request.user
 
-class GameDetail(generics.RetrieveAPIView):
+class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'game_id'
 
     queryset = Game.objects.all()
     serializer_class = GameExSerializer
 
     permission_classes = [GameDetailPermission]
+
+    # override parent class put method so that HTTP PUT request returns 405 Method not allowed
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def perform_update(self, serializer):
+        game = Game.objects.get(game_id=self.kwargs['game_id'])
+
+        if 'action' in self.request.data and self.request.data['action'] == 'add_player' and 'username' in self.request.data:
+
+            user_to_add = User.objects.filter(username=self.request.data['username'])
+
+            if not user_to_add:
+                raise exceptions.NotFound(detail="Player '%s' not found." % self.request.data['username'])
+
+            player_to_add = Player.objects.get(user=user_to_add[0])
+
+            if player_to_add in game.players.all():
+                raise Conflict(detail="'%s' is already participating in '%s'." % (self.request.data['username'], game.name))
+
+            game.players.add(player_to_add)
+    
+        elif 'action' in self.request.data and self.request.data['action'] == 'remove_player' and 'username' in self.request.data:
+
+            user_to_remove = User.objects.filter(username=self.request.data['username'])
+
+            if not user_to_remove:
+                raise exceptions.NotFound(detail="Player '%s' not found." % self.request.data['username'])
+
+            player_to_remove = Player.objects.get(user=user_to_remove[0])
+
+            if not player_to_remove in game.players.all():
+                raise Conflict(detail="'%s' is not participating in '%s'." % (self.request.data['username'], game.name))
+
+            game.players.remove(player_to_remove)
+
+        else:
+            raise exceptions.ParseError()
 
 class NotificationList(generics.ListAPIView):
     queryset = Notification.objects.all()
