@@ -283,7 +283,7 @@ class FriendRequestDetailPermission(permissions.BasePermission):
         # requested and requester can use non safe methods 
         return (request.user == requested_user) | (request.user == requester_user)
 
-class FriendRequestDetail(generics.RetrieveUpdateAPIView):
+class FriendRequestDetail(generics.UpdateAPIView):
     lookup_field = 'id'
 
     queryset = FriendRequest.objects.all()
