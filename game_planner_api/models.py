@@ -62,9 +62,9 @@ class Notification(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
 
-class FriendRequest(models.Model):
-    request_from = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_from')
-    request_to = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend_request_to')
+class Friendship(models.Model):
+    request_from = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friendship_request_from')
+    request_to = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friendship_request_to')
     request_datetime = models.DateTimeField()
     action_taken_datetime = models.DateTimeField(null=True, blank=True)
     state = models.CharField(max_length=20, null=True, blank=True)
@@ -73,7 +73,7 @@ class FriendRequest(models.Model):
         ordering = ['-request_datetime']
 
     def __str__(self):
-        return "Friend request from " + self.request_from.user.username + " to " + self.request_to.user.username
+        return "Friendship request from " + self.request_from.user.username + " to " + self.request_to.user.username
 
 class GameParticipationRequest(models.Model):
     request_from = models.ForeignKey(Player, on_delete=models.CASCADE)

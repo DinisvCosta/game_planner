@@ -11,8 +11,8 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
 
-from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer, FriendRequestSerializer, GameParticipationRequestSerializer
-from .models import Player, Game, NotificationType, Notification, FriendRequest, GameParticipationRequest
+from game_planner_api.serializers import PlayerSerializer, GameSerializer, GameExSerializer, NotificationSerializer, FriendshipSerializer, GameParticipationRequestSerializer
+from .models import Player, Game, NotificationType, Notification, Friendship, GameParticipationRequest
 
 class IndirectModelMixin:
 
@@ -274,9 +274,9 @@ class Conflict(exceptions.APIException):
     default_detail = 'Conflict'
     default_code = 'conflict'
 
-class FriendRequestList(generics.ListCreateAPIView):
-    queryset = FriendRequest.objects.all()
-    serializer_class = FriendRequestSerializer
+class FriendshipList(generics.ListCreateAPIView):
+    queryset = Friendship.objects.all()
+    serializer_class = FriendshipSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     # TODO deal with GET /friend_requests?filter=incoming or outgoing
@@ -292,8 +292,18 @@ class FriendRequestList(generics.ListCreateAPIView):
         if self.request.user and self.request.user.is_authenticated:
             user = self.request.user
             player = Player.objects.get(user=user)
-        
-            return qs.filter((Q(request_to=player) | Q(request_from=player)) & Q(state__isnull=True))
+
+            friendship_type = self.request.query_params.get('type', None)
+
+            if friendship_type is not None:
+                if friendship_type == "incoming":
+                    return qs.filter(Q(request_to=player) & Q(state__isnull=True))
+                elif friendship_type == "outgoing":
+                    return qs.filter(Q(request_from=player) & Q(state__isnull=True))
+                elif friendship_type == "active":
+                    return qs.filter(((Q(request_to=player) | Q(request_from=player)) & Q(state="ACTIVE")))
+            
+            return qs.filter(((Q(request_to=player) | Q(request_from=player)) & Q(state__isnull=True)) | ((Q(request_to=player) | Q(request_from=player)) & Q(state="ACTIVE")))
 
     def perform_create(self, serializer):
         request_json = self.request.data
@@ -314,8 +324,8 @@ class FriendRequestList(generics.ListCreateAPIView):
         if requester_player == requested_player:
             raise exceptions.PermissionDenied(detail="A player cannot add himself as a friend.")
 
-        outgoing_request = FriendRequest.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
-        incoming_request = FriendRequest.objects.filter(request_from=requested_player, request_to=requester_player, state__isnull=True)
+        outgoing_request = Friendship.objects.filter(request_from=requester_player, request_to=requested_player, state__isnull=True)
+        incoming_request = Friendship.objects.filter(request_from=requested_player, request_to=requester_player, state__isnull=True)
 
         active_request = outgoing_request or incoming_request
     
@@ -340,7 +350,7 @@ class FriendRequestList(generics.ListCreateAPIView):
                         request_to=requested_player,
                         request_datetime=request_datetime)
                         
-class FriendRequestDetailPermission(permissions.BasePermission):
+class FriendshipDetailPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
@@ -353,20 +363,20 @@ class FriendRequestDetailPermission(permissions.BasePermission):
         # requested and requester can use non safe methods 
         return (request.user == requested_user) | (request.user == requester_user)
 
-class FriendRequestDetail(generics.UpdateAPIView):
+class FriendshipDetail(generics.UpdateAPIView):
     lookup_field = 'id'
 
-    queryset = FriendRequest.objects.all()
-    serializer_class = FriendRequestSerializer
+    queryset = Friendship.objects.all()
+    serializer_class = FriendshipSerializer
 
-    permission_classes = [permissions.IsAuthenticated, FriendRequestDetailPermission]
+    permission_classes = [permissions.IsAuthenticated, FriendshipDetailPermission]
 
     # override parent class put method so that HTTP PUT request returns 405 Method not allowed (only PATCH requests allowed)
     def put(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def perform_update(self, serializer):
-        friend_request = FriendRequest.objects.get(id=self.kwargs['id'])
+        friend_request = Friendship.objects.get(id=self.kwargs['id'])
 
         if not ((self.request.user == friend_request.request_from.user or self.request.user == friend_request.request_to.user) and not friend_request.state):
             raise exceptions.PermissionDenied()
@@ -407,7 +417,7 @@ class FriendRequestDetail(generics.UpdateAPIView):
                 friend_request_notification.save()
             
             # Update friend_request state and save datetime of action_taken
-            serializer.save(state="ACCEPTED",
+            serializer.save(state="ACTIVE",
                             action_taken_datetime=request_datetime)
 
         elif self.request.user == friend_request.request_to.user and 'action' in self.request.data and self.request.data['action'] == 'decline':

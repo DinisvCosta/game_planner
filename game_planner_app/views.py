@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 
 from datetime import date, datetime
 
-from game_planner_api.models import Player, Game, Notification, FriendRequest, GameParticipationRequest, NotificationType
+from game_planner_api.models import Player, Game, Notification, Friendship, GameParticipationRequest, NotificationType
 from .forms import SignUpForm, LoginForm, CreateGameForm, ManageProfileForm, ManageGameForm
 
 def index(request):
@@ -204,11 +204,11 @@ class ProfileView(generic.DetailView):
             context['are_friends'] = player in list(request_player.friends.all())
 
             # Check if there's an existing active outgoing request
-            outgoing_request = FriendRequest.objects.filter(request_from=request_player, request_to=player, state__isnull=True)
+            outgoing_request = Friendship.objects.filter(request_from=request_player, request_to=player, state__isnull=True)
             context['outgoing_request'] = outgoing_request
 
             # Check if there's an existing active incoming request
-            incoming_request = FriendRequest.objects.filter(request_from=player, request_to=request_player, state__isnull=True)
+            incoming_request = Friendship.objects.filter(request_from=player, request_to=request_player, state__isnull=True)
             context['incoming_request'] = incoming_request
 
             # Add games list containing: public games, games authenticated user is also invited to, games authenticated user is admin
@@ -280,7 +280,7 @@ def friend_requests(request):
     # Display Friend Requests page
     request_player = Player.objects.get(user=request.user)
     # friend requests list only shows requests that are still pending received by authenticated user
-    friend_requests = FriendRequest.objects.filter(request_to=request_player, state__isnull=True)
+    friend_requests = Friendship.objects.filter(request_to=request_player, state__isnull=True)
 
     params = {}
     params['friend_requests'] = friend_requests

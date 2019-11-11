@@ -12,8 +12,8 @@ urlpatterns = [
     path('notifications', views.NotificationList.as_view()),
     path('notifications/<int:id>', views.NotificationDetail.as_view()),
 
-    path('friend_requests', views.FriendRequestList.as_view()),
-    path('friend_requests/<int:id>', views.FriendRequestDetail.as_view()),
+    path('friendships', views.FriendshipList.as_view()),
+    path('friendships/<int:id>', views.FriendshipDetail.as_view()),
 
     path('game_participation_requests', views.GameParticipationRequestList.as_view()),
     path('game_participation_requests/<int:id>', views.GameParticipationRequestDetail.as_view()),

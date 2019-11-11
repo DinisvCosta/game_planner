@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from .models import Player, Game, Notification, FriendRequest, GameParticipationRequest
+from .models import Player, Game, Notification, Friendship, GameParticipationRequest
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,13 +75,13 @@ class NotificationSerializer(serializers.ModelSerializer):
         sender_player = Player.objects.get(user=obj.sender)
         return sender_player.get_absolute_url()
 
-class FriendRequestSerializer(serializers.ModelSerializer):
+class FriendshipSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='pk')
     request_to = serializers.ReadOnlyField(source='request_to.user.username')
     request_from = serializers.ReadOnlyField(source='request_from.user.username')
 
     class Meta:
-        model = FriendRequest
+        model = Friendship
         fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
         read_only_fields = ['id', 'request_from', 'request_to', 'request_datetime', 'action_taken_datetime', 'state']
 
