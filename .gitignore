@@ -106,11 +106,4 @@ venv.bak/
 .vscode/
 migrations/
 
-
-
-
-
-
-
-
-game_planner_app/settings.ini
+game_planner/settings.ini
