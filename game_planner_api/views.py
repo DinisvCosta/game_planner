@@ -357,13 +357,9 @@ class FriendshipDetailPermission(permissions.BasePermission):
         requester_user = User.objects.get(username=obj.request_from.user.username)
         requested_user = User.objects.get(username=obj.request_to.user.username)
 
-        if request.method in permissions.SAFE_METHODS:
-            return ((request.user == requested_user) | (request.user == requester_user)) and obj.state == None
-        
-        # requested and requester can use non safe methods 
         return (request.user == requested_user) | (request.user == requester_user)
 
-class FriendshipDetail(generics.UpdateAPIView):
+class FriendshipDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     queryset = Friendship.objects.all()
@@ -441,6 +437,38 @@ class FriendshipDetail(generics.UpdateAPIView):
 
         else:
             raise exceptions.ParseError()
+
+    """
+    TODO: let client DELETE friendships using /friendships/{username} instead of /friendships/{id}
+    """
+    def perform_destroy(self, instance):
+
+        # Remove player from friends in the Player model
+        user = self.request.user
+        requester_player = Player.objects.get(user=user)
+
+        friend_request = Friendship.objects.get(id=self.kwargs['id'])
+        
+        if not friend_request.state == "ACTIVE":
+            raise exceptions.PermissionDenied()
+
+        if friend_request.request_from == requester_player:
+            player_to_remove = friend_request.request_to
+        else:
+            player_to_remove = friend_request.request_from
+
+        requester_player.friends.remove(player_to_remove)
+
+        # Remove "X accepted your friend request." notification from the requester if it hasn't been read yet
+        notification = Notification.objects.filter(notification_type=NotificationType.ADDED_AS_FRIEND.value,
+                                                user=player_to_remove.user,
+                                                read=False)
+        
+        if notification:
+            notification.delete()
+
+        # Delete active Friendship instance
+        instance.delete()
 
 class GameParticipationRequestList(generics.ListCreateAPIView):
     queryset = GameParticipationRequest.objects.all()
