@@ -1,0 +1,10 @@
+[SECRET_KEY]
+secret_key_a=SECRET_KEY
+
+[TEMPLATE_DIRS]
+dir_1=PATH_TO_GAME_PLANNER_DIR/game_planner/game_planner_app/templates/game_planner_app
+
+[DATABASE]
+name=DB_NAME
+user=DB_USER
+password=DB_PASSWORD

@@ -107,3 +107,4 @@ venv.bak/
 migrations/
 
 game_planner/settings.ini
+game_planner/settings.py
