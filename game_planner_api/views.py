@@ -279,10 +279,6 @@ class FriendshipList(generics.ListCreateAPIView):
     serializer_class = FriendshipSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    # TODO deal with GET /friend_requests?filter=incoming or outgoing
-    # use request.query_params to filter friend requests as incoming or outgoing 
-    # more info at: https://www.django-rest-framework.org/api-guide/requests/#query_params
-
     def get_queryset(self):
         """
         Only show friend requests of authenticated user.
